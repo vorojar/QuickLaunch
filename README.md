@@ -6,6 +6,8 @@ A fast, native app launcher for macOS that recreates the classic Launchpad exper
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+![QuickLaunch Screenshot](screenshots/main.png)
+
 ## Features
 
 - **Full-screen Launchpad** - Blurred wallpaper background, just like native macOS
@@ -18,22 +20,6 @@ A fast, native app launcher for macOS that recreates the classic Launchpad exper
 - **Status Bar** - Quick access from menu bar
 - **Auto Update** - Automatically detects newly installed/removed apps
 - **Bilingual** - Chinese and English based on system language
-
-## Screenshots
-
-Press `⌘⇧Space` or click the status bar icon to open:
-
-```
-┌─────────────────────────────────────┐
-│           🔍 Search                 │
-│                                     │
-│   📱  📱  📱  📱  📱  📱  📱       │
-│   📱  📱  📁  📱  📱  📱  📱       │
-│   📱  📱  📱  📱  📱  📱  📱       │
-│                                     │
-│                         [Quit]      │
-└─────────────────────────────────────┘
-```
 
 ## Installation
 
