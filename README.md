@@ -5,6 +5,9 @@ A fast, native app launcher for macOS that recreates the classic Launchpad exper
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![License](https://img.shields.io/badge/License-MIT-green)
+[![GitHub release](https://img.shields.io/github/v/release/vorojar/QuickLaunch)](https://github.com/vorojar/QuickLaunch/releases)
+
+🌐 **Website:** [https://vorojar.github.io/QuickLaunch](https://vorojar.github.io/QuickLaunch)
 
 ![QuickLaunch Screenshot](screenshots/main.png)
 
@@ -20,30 +23,21 @@ A fast, native app launcher for macOS that recreates the classic Launchpad exper
 - **Status Bar** - Quick access from menu bar
 - **Auto Update** - Automatically detects newly installed/removed apps
 - **Bilingual** - Chinese and English based on system language
+- **Signed & Notarized** - No security warnings, just double-click to use
 
 ## Installation
 
-### Build from Source
+### Method 1: Homebrew (Recommended)
 
 ```bash
-# Clone the repository
-git clone https://github.com/vorojar/QuickLaunch.git
-cd QuickLaunch
-
-# Build and create app bundle
-./scripts/build.sh
-
-# Run
-open QuickLaunch.app
-
-# Or install to Applications
-cp -r QuickLaunch.app /Applications/
+brew install --cask quicklaunch
 ```
 
-### Requirements
+### Method 2: Direct Download
 
-- macOS 14.0 (Sonoma) or later
-- Xcode Command Line Tools or Xcode
+1. Download the latest [QuickLaunch.dmg](https://github.com/vorojar/QuickLaunch/releases/latest)
+2. Open the DMG and drag `QuickLaunch.app` to Applications folder
+3. Double-click to launch
 
 ## Usage
 
@@ -59,6 +53,11 @@ cp -r QuickLaunch.app /Applications/
 | Reorder Apps | Drag and drop |
 | Delete Mode | Long press on any app |
 | Context Menu | Right-click on app |
+
+## System Requirements
+
+- macOS 14.0 (Sonoma) or later
+- Apple Silicon or Intel Mac
 
 ## Project Structure
 
@@ -87,9 +86,29 @@ QuickLaunch/
 │   ├── Info.plist
 │   ├── AppIcon.icns
 │   └── StatusBarIcon.png
+├── Casks/
+│   └── quicklaunch.rb            # Homebrew Cask formula
 ├── scripts/
 │   └── build.sh                  # Build script
+├── index.html                    # Landing page
 └── Package.swift
+```
+
+## Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/vorojar/QuickLaunch.git
+cd QuickLaunch
+
+# Build and create app bundle
+./scripts/build.sh
+
+# Run
+open QuickLaunch.app
+
+# Or install to Applications
+cp -r QuickLaunch.app /Applications/
 ```
 
 ## Data Storage
@@ -104,6 +123,8 @@ User data is stored in `~/Library/Application Support/QuickLaunch/`:
 
 MIT License
 
-## Acknowledgments
+## Links
 
-Built with Swift, SwiftUI, and AppKit.
+- 🌐 [Website](https://vorojar.github.io/QuickLaunch)
+- 📦 [Releases](https://github.com/vorojar/QuickLaunch/releases)
+- 🍺 [Homebrew Cask](https://github.com/Homebrew/homebrew-cask/pull/247853)

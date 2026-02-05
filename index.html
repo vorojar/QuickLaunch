@@ -266,13 +266,15 @@
     }
 
     /* Language toggle */
+    .en { display: block; }
     .zh { display: none; }
+    .en-inline { display: inline; }
+    .zh-inline { display: none; }
+
     body.zh .en { display: none; }
     body.zh .zh { display: block; }
-    body.zh .zh-inline { display: inline; }
     body.zh .en-inline { display: none; }
-    body:not(.zh) .zh-inline { display: none; }
-    body:not(.zh) .en-inline { display: inline; }
+    body.zh .zh-inline { display: inline; }
   </style>
 </head>
 <body>
