@@ -111,6 +111,26 @@
       box-shadow: 0 1px 0 rgba(0,0,0,0.1);
     }
 
+    /* Story */
+    .story {
+      padding: 40px 0;
+      text-align: center;
+      background: #fff;
+    }
+    .story blockquote {
+      font-size: 21px;
+      font-style: italic;
+      color: #1d1d1f;
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .story .author {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #86868b;
+    }
+
     /* Screenshot */
     .screenshot {
       padding: 40px 0 80px;
@@ -256,6 +276,13 @@
       </div>
     </section>
 
+    <section class="story">
+      <div class="container">
+        <blockquote id="story-text">"macOS 26 removed Launchpad, and it's just so frustrating to use. So I made my own — and it's super sleek."</blockquote>
+        <p class="author">— The Developer</p>
+      </div>
+    </section>
+
     <section class="screenshot">
       <div class="container">
         <img src="screenshots/main.png" alt="QuickLaunch Screenshot">
@@ -315,6 +342,7 @@
     var zh = navigator.language.startsWith('zh');
     var texts = {
       tagline: ['Your apps. Instantly.', '你的应用，瞬间启动。'],
+      'story-text': ['"macOS 26 removed Launchpad, and it\'s just so frustrating to use. So I made my own — and it\'s super sleek."', '"macOS 26 移除了启动台，用起来太难受了。所以我自己做了一个——而且超级好用。"'],
       'dl-btn': ['Download', '下载'],
       'hotkey-text': ['to launch', '呼出'],
       'feat-title': ['Features', '功能'],
