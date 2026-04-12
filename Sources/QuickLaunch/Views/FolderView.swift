@@ -110,7 +110,7 @@ struct FolderExpandedView: View {
     var onRename: (String) -> Void
 
     @EnvironmentObject private var appState: AppState
-    @State private var isEditingName = true  // auto-edit on open
+    @State private var isEditingName = false
     @State private var editText: String = ""
     @FocusState private var nameFieldFocused: Bool
 
@@ -185,15 +185,8 @@ struct FolderExpandedView: View {
 
                         Button {
                             if let path = child.path {
-                                let script = """
-                                tell application "Finder"
-                                    open information window of (POSIX file "\(path)" as alias)
-                                    activate
-                                end tell
-                                """
-                                if let appleScript = NSAppleScript(source: script) {
-                                    appleScript.executeAndReturnError(nil)
-                                }
+                                let url = URL(fileURLWithPath: path)
+                                NSWorkspace.shared.activateFileViewerSelecting([url])
                             }
                         } label: {
                             Label(L10n.getInfo, systemImage: "info.circle")

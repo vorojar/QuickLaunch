@@ -47,15 +47,25 @@ final class IconCache: @unchecked Sendable {
     }
 
     // Render icon to a fixed-size bitmap to avoid SwiftUI re-rasterizing vector/PDF icons every frame.
+    // Uses NSBitmapImageRep instead of lockFocus for thread safety (called from background threads).
     private func prerenderIcon(_ source: NSImage) -> NSImage {
-        let img = NSImage(size: renderSize)
-        img.lockFocus()
+        let w = Int(renderSize.width)
+        let h = Int(renderSize.height)
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: w, pixelsHigh: h,
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
+        ) else { return source }
+
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
         NSGraphicsContext.current?.imageInterpolation = .high
         source.draw(in: NSRect(origin: .zero, size: renderSize),
-                    from: .zero,
-                    operation: .copy,
-                    fraction: 1.0)
-        img.unlockFocus()
+                    from: .zero, operation: .copy, fraction: 1.0)
+        NSGraphicsContext.restoreGraphicsState()
+
+        let img = NSImage(size: renderSize)
+        img.addRepresentation(rep)
         img.cacheMode = .always
         return img
     }

@@ -30,7 +30,7 @@ final class AppState: ObservableObject {
     private var lastMoveTarget: UUID? // debounce reorder
     private var directoryMonitor: DirectoryMonitor?
     private var rescanTimer: Timer?
-    private var isScanning = false // prevent concurrent scans
+    private let scanQueue = DispatchQueue(label: "com.quicklaunch.scan")
 
     // Search cache
     private var cachedSearchText: String = ""
@@ -143,17 +143,14 @@ final class AppState: ObservableObject {
 
     /// Merge newly installed apps and remove uninstalled ones, preserving user layout.
     private func mergeApps() {
-        // Skip if another scan is already in progress
-        guard !isScanning else { return }
-        isScanning = true
-        defer { isScanning = false }
+        // Serial queue ensures only one scan runs at a time
+        scanQueue.async { [weak self] in
+            guard let self else { return }
+            let scanned = self.appScanner.scanApplications()
 
-        // Scan on current (background) thread
-        let scanned = appScanner.scanApplications()
-
-        // Dispatch to main thread for all gridItems/hiddenBundleIDs access
-        DispatchQueue.main.async { [weak self] in
-            self?.applyMerge(scanned: scanned)
+            DispatchQueue.main.async { [weak self] in
+                self?.applyMerge(scanned: scanned)
+            }
         }
     }
 
@@ -219,9 +216,7 @@ final class AppState: ObservableObject {
 
     /// Public rescan that preserves layout (used by menu bar "Rescan" button)
     func rescan() {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.mergeApps()
-        }
+        mergeApps()
     }
 
     // MARK: - Wallpaper (capture + heavy blur + slight zoom like native)
@@ -244,7 +239,8 @@ final class AppState: ObservableObject {
 
             // Darken
             let darken = CIFilter(name: "CIColorControls")!
-            darken.setValue(blur.outputImage!, forKey: kCIInputImageKey)
+            guard let blurOutput = blur.outputImage else { return }
+            darken.setValue(blurOutput, forKey: kCIInputImageKey)
             darken.setValue(-0.15, forKey: kCIInputBrightnessKey)
             darken.setValue(1.1, forKey: kCIInputSaturationKey)
 
@@ -348,13 +344,17 @@ final class AppState: ObservableObject {
     func confirmTrash() {
         guard let item = pendingTrashItem, let path = item.path else { return }
         let url = URL(fileURLWithPath: path)
-        try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
-        withAnimation(.spring(duration: 0.25)) {
-            removeItemFromGrid(item.id)
+        do {
+            try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+            withAnimation(.spring(duration: 0.25)) {
+                removeItemFromGrid(item.id)
+            }
+            save()
+        } catch {
+            // Trash failed (e.g. SIP-protected app), don't remove from grid
         }
         pendingTrashItem = nil
         showTrashConfirm = false
-        save()
     }
 
     func cancelTrash() {
