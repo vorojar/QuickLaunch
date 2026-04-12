@@ -63,15 +63,43 @@ mkdir -p "$DMG_STAGING"
 cp -r "$APP_BUNDLE" "$DMG_STAGING/"
 ln -s /Applications "$DMG_STAGING/Applications"
 
-# Create writable DMG, copy contents preserving symlinks, then convert to compressed
+# Create writable DMG, copy contents, configure Finder view, then convert
 rm -f "$DMG_NAME"
 DMG_RW="$BUILD_DIR/QuickLaunch-rw.dmg"
 rm -f "$DMG_RW"
 hdiutil create -size 200m -fs HFS+ -volname "QuickLaunch" "$DMG_RW"
-hdiutil attach "$DMG_RW" -nobrowse -quiet -mountpoint "$BUILD_DIR/dmg-mount"
-cp -R "$DMG_STAGING/QuickLaunch.app" "$BUILD_DIR/dmg-mount/"
-ln -s /Applications "$BUILD_DIR/dmg-mount/Applications"
-hdiutil detach "$BUILD_DIR/dmg-mount" -quiet
+
+# Mount WITHOUT -nobrowse so Finder can see and configure it
+hdiutil attach "$DMG_RW" -quiet
+cp -R "$DMG_STAGING/QuickLaunch.app" "/Volumes/QuickLaunch/"
+ln -s /Applications "/Volumes/QuickLaunch/Applications"
+
+# Configure Finder window: compact size, icon view, icon positions
+osascript <<'APPLESCRIPT'
+tell application "Finder"
+    tell disk "QuickLaunch"
+        open
+        set current view of container window to icon view
+        set toolbar visible of container window to false
+        set statusbar visible of container window to false
+        set bounds of container window to {200, 200, 760, 524}
+        set theViewOptions to icon view options of container window
+        set arrangement of theViewOptions to not arranged
+        set icon size of theViewOptions to 96
+        set background color of theViewOptions to {65535, 65535, 65535}
+        set position of item "QuickLaunch.app" of container window to {140, 160}
+        set position of item "Applications" of container window to {420, 160}
+        close
+        open
+        update without registering applications
+        delay 2
+        close
+    end tell
+end tell
+APPLESCRIPT
+
+sync
+hdiutil detach "/Volumes/QuickLaunch" -quiet
 hdiutil convert "$DMG_RW" -format UDZO -o "$DMG_NAME"
 rm -f "$DMG_RW"
 rm -rf "$DMG_STAGING"
