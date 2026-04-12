@@ -1,6 +1,8 @@
-# QuickLaunch
+# QuickLaunch - macOS App Launcher
 
-A fast, native app launcher for macOS that recreates the classic Launchpad experience.
+**English** | [中文](README_ZH.md)
+
+> A fast, lightweight, native app launcher for macOS — a better alternative to the built-in Launchpad. Pure Swift, zero dependencies, ~36 MB memory.
 
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
@@ -8,6 +10,26 @@ A fast, native app launcher for macOS that recreates the classic Launchpad exper
 [![GitHub release](https://img.shields.io/github/v/release/vorojar/QuickLaunch)](https://github.com/vorojar/QuickLaunch/releases)
 
 ![QuickLaunch Screenshot](screenshots/main.png)
+
+## Why QuickLaunch?
+
+macOS Launchpad lacks pinyin search, category-based organization, context menus, and customizable hotkeys. QuickLaunch fills these gaps while keeping the same smooth, native feel.
+
+### vs. Native Launchpad
+
+| Feature | Launchpad | QuickLaunch |
+|---------|:-:|:-:|
+| Full-screen blur | ✅ | ✅ |
+| Drag & drop / folders | ✅ | ✅ |
+| Search | ✅ | ✅ |
+| Jiggle delete mode | ✅ | ✅ |
+| Auto-detect installs | ✅ | ✅ |
+| Pinyin search | ❌ | ✅ |
+| Auto organize by category | ❌ | ✅ |
+| Usage-based sorting | ❌ | ✅ |
+| Context menu | ❌ | ✅ |
+| Status bar access | ❌ | ✅ |
+| Custom global hotkey | ❌ | ✅ |
 
 ## Features
 
@@ -100,3 +122,7 @@ MIT License
 - [Website](https://vorojar.github.io/QuickLaunch)
 - [Releases](https://github.com/vorojar/QuickLaunch/releases)
 - [Homebrew Cask](https://github.com/Homebrew/homebrew-cask/pull/247853)
+
+---
+
+**Keywords:** macOS launcher, Launchpad alternative, Mac app launcher, macOS application launcher, Swift macOS app, pinyin search launcher, Launchpad replacement
