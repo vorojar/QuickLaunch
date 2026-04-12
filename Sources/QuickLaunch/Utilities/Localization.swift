@@ -8,11 +8,11 @@ enum L10n {
     }()
 
     // MARK: - Menu Items
-    static var menuShow: String { isChinese ? "显示 QuickLaunch" : "Show QuickLaunch" }
+    static var menuShow: String { isChinese ? "显示" : "Show" }
     static var menuAutoOrganize: String { isChinese ? "自动整理" : "Auto Organize" }
     static var menuRescan: String { isChinese ? "重新扫描" : "Rescan Apps" }
-    static var menuAbout: String { isChinese ? "关于 QuickLaunch" : "About QuickLaunch" }
-    static var menuQuit: String { isChinese ? "退出 QuickLaunch" : "Quit QuickLaunch" }
+    static var menuAbout: String { isChinese ? "关于" : "About" }
+    static var menuQuit: String { isChinese ? "退出" : "Quit" }
 
     // MARK: - Search
     static var searchPlaceholder: String { isChinese ? "搜索" : "Search" }
