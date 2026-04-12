@@ -87,6 +87,12 @@ enum L10n {
         return isChinese ? pair.zh : pair.en
     }
 
+    /// Returns the category name for a specific language (used for migration lookups).
+    static func categoryName(_ key: String, forceLanguage lang: String) -> String {
+        guard let pair = categoryLocalizations[key] else { return key }
+        return lang.hasPrefix("zh") ? pair.zh : pair.en
+    }
+
     // MARK: - About
     static var aboutTitle: String { isChinese ? "关于 QuickLaunch" : "About QuickLaunch" }
     static var aboutDescription: String {

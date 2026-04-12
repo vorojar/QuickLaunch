@@ -30,6 +30,7 @@ final class AppState: ObservableObject {
     private var lastMoveTarget: UUID? // debounce reorder
     private var directoryMonitor: DirectoryMonitor?
     private var rescanTimer: Timer?
+    private var isScanning = false // prevent concurrent scans
 
     // Search cache
     private var cachedSearchText: String = ""
@@ -55,6 +56,24 @@ final class AppState: ObservableObject {
         usageTracker.records = dataStore.loadUsageStats()
         hiddenBundleIDs = dataStore.loadHiddenApps()
         if saved == nil { sortByUsage() }
+        migrateFolderNames()
+    }
+
+    /// Update auto-organized folder names to match current system language.
+    private func migrateFolderNames() {
+        let allLocalizedNames = AppScanner.allLocalizedFolderNames()
+        var changed = false
+        for i in gridItems.indices where gridItems[i].kind == .folder {
+            // Check if this folder name matches any category name in any language
+            if let currentKey = allLocalizedNames[gridItems[i].name] {
+                let correctName = L10n.categoryName(currentKey)
+                if gridItems[i].name != correctName {
+                    gridItems[i].name = correctName
+                    changed = true
+                }
+            }
+        }
+        if changed { save() }
     }
 
     func save() {
@@ -124,6 +143,11 @@ final class AppState: ObservableObject {
 
     /// Merge newly installed apps and remove uninstalled ones, preserving user layout.
     private func mergeApps() {
+        // Skip if another scan is already in progress
+        guard !isScanning else { return }
+        isScanning = true
+        defer { isScanning = false }
+
         // Scan on current (background) thread
         let scanned = appScanner.scanApplications()
 

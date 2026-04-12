@@ -136,4 +136,19 @@ final class AppScanner {
         guard let cat = category, let key = categoryKeys[cat] else { return nil }
         return L10n.categoryName(key)
     }
+
+    /// Returns a map from every possible localized folder name (all languages) to its category key.
+    /// Used for migrating folder names when the system language changes.
+    static func allLocalizedFolderNames() -> [String: String] {
+        var result: [String: String] = [:]
+        let uniqueKeys = Set(categoryKeys.values)
+        for key in uniqueKeys {
+            // Add both Chinese and English names mapping to the same key
+            let zh = L10n.categoryName(key, forceLanguage: "zh")
+            let en = L10n.categoryName(key, forceLanguage: "en")
+            result[zh] = key
+            result[en] = key
+        }
+        return result
+    }
 }
