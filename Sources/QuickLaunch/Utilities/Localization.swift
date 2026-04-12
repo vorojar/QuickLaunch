@@ -52,6 +52,41 @@ enum L10n {
     // MARK: - Bottom Bar
     static var quit: String { isChinese ? "退出" : "Quit" }
 
+    // MARK: - Category Names (for auto-organize folders)
+
+    private static let categoryLocalizations: [String: (zh: String, en: String)] = [
+        "developerTools": ("开发工具", "Developer Tools"),
+        "productivity": ("效率工具", "Productivity"),
+        "utilities": ("实用工具", "Utilities"),
+        "social": ("社交", "Social"),
+        "design": ("设计", "Design"),
+        "photography": ("摄影", "Photography"),
+        "video": ("视频", "Video"),
+        "entertainment": ("娱乐", "Entertainment"),
+        "music": ("音乐", "Music"),
+        "games": ("游戏", "Games"),
+        "education": ("教育", "Education"),
+        "finance": ("财务", "Finance"),
+        "business": ("商务", "Business"),
+        "news": ("新闻", "News"),
+        "reference": ("参考资料", "Reference"),
+        "travel": ("旅行", "Travel"),
+        "weather": ("天气", "Weather"),
+        "lifestyle": ("生活", "Lifestyle"),
+        "medical": ("医疗", "Medical"),
+        "health": ("健康", "Health & Fitness"),
+        "foodDrink": ("美食", "Food & Drink"),
+        "books": ("图书", "Books"),
+        "navigation": ("导航", "Navigation"),
+        "sports": ("体育", "Sports"),
+        "apple": ("Apple", "Apple"),
+    ]
+
+    static func categoryName(_ key: String) -> String {
+        guard let pair = categoryLocalizations[key] else { return key }
+        return isChinese ? pair.zh : pair.en
+    }
+
     // MARK: - About
     static var aboutTitle: String { isChinese ? "关于 QuickLaunch" : "About QuickLaunch" }
     static var aboutDescription: String {

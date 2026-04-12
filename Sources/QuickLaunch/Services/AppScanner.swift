@@ -77,56 +77,63 @@ final class AppScanner {
         )
     }
 
-    /// Map category ID to user-friendly folder name (Chinese)
-    static let categoryNames: [String: String] = [
-        "public.app-category.developer-tools": "开发工具",
-        "public.app-category.productivity": "效率工具",
-        "public.app-category.utilities": "实用工具",
-        "public.app-category.social-networking": "社交",
-        "public.app-category.graphics-design": "设计",
-        "public.app-category.photography": "摄影",
-        "public.app-category.video": "视频",
-        "public.app-category.entertainment": "娱乐",
-        "public.app-category.music": "音乐",
-        "public.app-category.games": "游戏",
-        "public.app-category.action-games": "游戏",
-        "public.app-category.adventure-games": "游戏",
-        "public.app-category.arcade-games": "游戏",
-        "public.app-category.board-games": "游戏",
-        "public.app-category.card-games": "游戏",
-        "public.app-category.casino-games": "游戏",
-        "public.app-category.dice-games": "游戏",
-        "public.app-category.educational-games": "游戏",
-        "public.app-category.family-games": "游戏",
-        "public.app-category.kids-games": "游戏",
-        "public.app-category.music-games": "游戏",
-        "public.app-category.puzzle-games": "游戏",
-        "public.app-category.racing-games": "游戏",
-        "public.app-category.role-playing-games": "游戏",
-        "public.app-category.simulation-games": "游戏",
-        "public.app-category.sports-games": "游戏",
-        "public.app-category.strategy-games": "游戏",
-        "public.app-category.trivia-games": "游戏",
-        "public.app-category.word-games": "游戏",
-        "public.app-category.education": "教育",
-        "public.app-category.finance": "财务",
-        "public.app-category.business": "商务",
-        "public.app-category.news": "新闻",
-        "public.app-category.reference": "参考资料",
-        "public.app-category.travel": "旅行",
-        "public.app-category.weather": "天气",
-        "public.app-category.lifestyle": "生活",
-        "public.app-category.medical": "医疗",
-        "public.app-category.healthcare-fitness": "健康",
-        "public.app-category.food-drink": "美食",
-        "public.app-category.books": "图书",
-        "public.app-category.navigation": "导航",
-        "public.app-category.sports": "体育",
-        "apple": "Apple"
-    ]
+    /// Map category ID to localized folder name key, then resolve via L10n
+    private static let categoryKeys: [String: String] = {
+        var map: [String: String] = [
+            "public.app-category.developer-tools": "developerTools",
+            "public.app-category.productivity": "productivity",
+            "public.app-category.utilities": "utilities",
+            "public.app-category.social-networking": "social",
+            "public.app-category.graphics-design": "design",
+            "public.app-category.photography": "photography",
+            "public.app-category.video": "video",
+            "public.app-category.entertainment": "entertainment",
+            "public.app-category.music": "music",
+            "public.app-category.education": "education",
+            "public.app-category.finance": "finance",
+            "public.app-category.business": "business",
+            "public.app-category.news": "news",
+            "public.app-category.reference": "reference",
+            "public.app-category.travel": "travel",
+            "public.app-category.weather": "weather",
+            "public.app-category.lifestyle": "lifestyle",
+            "public.app-category.medical": "medical",
+            "public.app-category.healthcare-fitness": "health",
+            "public.app-category.food-drink": "foodDrink",
+            "public.app-category.books": "books",
+            "public.app-category.navigation": "navigation",
+            "public.app-category.sports": "sports",
+            "apple": "apple",
+        ]
+        // All game subcategories map to "games"
+        let gameCategories = [
+            "public.app-category.games",
+            "public.app-category.action-games",
+            "public.app-category.adventure-games",
+            "public.app-category.arcade-games",
+            "public.app-category.board-games",
+            "public.app-category.card-games",
+            "public.app-category.casino-games",
+            "public.app-category.dice-games",
+            "public.app-category.educational-games",
+            "public.app-category.family-games",
+            "public.app-category.kids-games",
+            "public.app-category.music-games",
+            "public.app-category.puzzle-games",
+            "public.app-category.racing-games",
+            "public.app-category.role-playing-games",
+            "public.app-category.simulation-games",
+            "public.app-category.sports-games",
+            "public.app-category.strategy-games",
+            "public.app-category.trivia-games",
+            "public.app-category.word-games",
+        ]
+        for cat in gameCategories { map[cat] = "games" }
+        return map
+    }()
 
     static func folderName(for category: String?) -> String? {
-        guard let cat = category else { return nil }
-        return categoryNames[cat]
+        guard let cat = category, let key = categoryKeys[cat] else { return nil }
+        return L10n.categoryName(key)
     }
 }

@@ -46,14 +46,15 @@ final class AppState: ObservableObject {
     }
 
     func loadData() {
-        if let saved = dataStore.loadGridLayout(), !saved.isEmpty {
+        let saved = dataStore.loadGridLayout()
+        if let saved, !saved.isEmpty {
             gridItems = saved
         } else {
             gridItems = appScanner.scanApplications()
         }
         usageTracker.records = dataStore.loadUsageStats()
         hiddenBundleIDs = dataStore.loadHiddenApps()
-        if dataStore.loadGridLayout() == nil { sortByUsage() }
+        if saved == nil { sortByUsage() }
     }
 
     func save() {
@@ -122,9 +123,16 @@ final class AppState: ObservableObject {
 
     /// Merge newly installed apps and remove uninstalled ones, preserving user layout.
     private func mergeApps() {
+        // Scan on current (background) thread
         let scanned = appScanner.scanApplications()
 
-        // Collect all existing bundle IDs (top-level + inside folders)
+        // Dispatch to main thread for all gridItems/hiddenBundleIDs access
+        DispatchQueue.main.async { [weak self] in
+            self?.applyMerge(scanned: scanned)
+        }
+    }
+
+    private func applyMerge(scanned: [LaunchItem]) {
         var existingBIDs = Set<String>()
         for item in gridItems {
             if let bid = item.bundleIdentifier { existingBIDs.insert(bid) }
@@ -135,65 +143,59 @@ final class AppState: ObservableObject {
             }
         }
 
-        // Collect all scanned bundle IDs
         let scannedBIDs = Set(scanned.compactMap(\.bundleIdentifier))
 
-        // Find new apps (in scanned but not in existing, and not hidden)
         let newApps = scanned.filter { item in
             guard let bid = item.bundleIdentifier else { return false }
             return !existingBIDs.contains(bid) && !hiddenBundleIDs.contains(bid)
         }
 
-        // Find removed apps (in existing but not in scanned)
         let removedBIDs = existingBIDs.subtracting(scannedBIDs)
 
         guard !newApps.isEmpty || !removedBIDs.isEmpty else { return }
 
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-
-            // Remove uninstalled apps
-            if !removedBIDs.isEmpty {
-                withAnimation(.spring(duration: 0.25)) {
-                    // Remove from top-level (non-folder items)
-                    self.gridItems.removeAll { item in
-                        guard item.kind != .folder else { return false }
-                        if let bid = item.bundleIdentifier { return removedBIDs.contains(bid) }
+        if !removedBIDs.isEmpty {
+            withAnimation(.spring(duration: 0.25)) {
+                gridItems.removeAll { item in
+                    guard item.kind != .folder else { return false }
+                    if let bid = item.bundleIdentifier { return removedBIDs.contains(bid) }
+                    return false
+                }
+                for i in gridItems.indices where gridItems[i].kind == .folder {
+                    gridItems[i].children?.removeAll { child in
+                        if let bid = child.bundleIdentifier { return removedBIDs.contains(bid) }
                         return false
                     }
-                    // Remove from inside folders
-                    for i in self.gridItems.indices where self.gridItems[i].kind == .folder {
-                        self.gridItems[i].children?.removeAll { child in
-                            if let bid = child.bundleIdentifier { return removedBIDs.contains(bid) }
-                            return false
-                        }
-                    }
-                    // Dissolve empty/single-child folders in a separate reverse pass
-                    for i in stride(from: self.gridItems.count - 1, through: 0, by: -1) {
-                        guard self.gridItems[i].kind == .folder else { continue }
-                        if let ch = self.gridItems[i].children, ch.count <= 1 {
-                            let remaining = ch
-                            self.gridItems.remove(at: i)
-                            for (j, c) in remaining.enumerated() {
-                                self.gridItems.insert(c, at: min(i + j, self.gridItems.count))
-                            }
+                }
+                for i in stride(from: gridItems.count - 1, through: 0, by: -1) {
+                    guard gridItems[i].kind == .folder else { continue }
+                    if let ch = gridItems[i].children, ch.count <= 1 {
+                        let remaining = ch
+                        gridItems.remove(at: i)
+                        for (j, c) in remaining.enumerated() {
+                            gridItems.insert(c, at: min(i + j, gridItems.count))
                         }
                     }
                 }
             }
+        }
 
-            // Append new apps at end
-            if !newApps.isEmpty {
-                withAnimation(.spring(duration: 0.25)) {
-                    self.gridItems.append(contentsOf: newApps)
-                }
-                // Preload icons for new apps
-                DispatchQueue.global(qos: .userInitiated).async {
-                    self.iconCache.preload(newApps)
-                }
+        if !newApps.isEmpty {
+            withAnimation(.spring(duration: 0.25)) {
+                gridItems.append(contentsOf: newApps)
             }
+            DispatchQueue.global(qos: .userInitiated).async { [self] in
+                iconCache.preload(newApps)
+            }
+        }
 
-            self.save()
+        save()
+    }
+
+    /// Public rescan that preserves layout (used by menu bar "Rescan" button)
+    func rescan() {
+        DispatchQueue.global(qos: .userInitiated).async { [self] in
+            mergeApps()
         }
     }
 
@@ -268,13 +270,41 @@ final class AppState: ObservableObject {
     @Published var pendingTrashItem: LaunchItem? = nil
     @Published var showTrashConfirm: Bool = false
 
+    /// Remove item from grid, searching both top-level and inside folders.
+    private func removeItemFromGrid(_ itemID: UUID) {
+        if gridItems.contains(where: { $0.id == itemID }) {
+            gridItems.removeAll { $0.id == itemID }
+        } else {
+            // Search inside folders
+            for i in gridItems.indices where gridItems[i].kind == .folder {
+                if gridItems[i].children?.contains(where: { $0.id == itemID }) == true {
+                    gridItems[i].children?.removeAll { $0.id == itemID }
+                    // Dissolve folder if only 0-1 children remain
+                    if let ch = gridItems[i].children, ch.count <= 1 {
+                        let remaining = ch
+                        gridItems.remove(at: i)
+                        for (j, c) in remaining.enumerated() {
+                            gridItems.insert(c, at: min(i + j, gridItems.count))
+                        }
+                    }
+                    break
+                }
+            }
+        }
+    }
+
     /// Remove from LaunchPad only (hide, no confirmation needed)
     func hideFromLaunchpad(_ item: LaunchItem) {
+        if item.kind == .folder {
+            // Dissolve folder: put children back into grid, don't hide them
+            dissolveFolder(id: item.id)
+            return
+        }
         if let bid = item.bundleIdentifier {
             hiddenBundleIDs.insert(bid)
         }
         withAnimation(.spring(duration: 0.25)) {
-            gridItems.removeAll { $0.id == item.id }
+            removeItemFromGrid(item.id)
         }
         save()
     }
@@ -290,7 +320,7 @@ final class AppState: ObservableObject {
         let url = URL(fileURLWithPath: path)
         try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
         withAnimation(.spring(duration: 0.25)) {
-            gridItems.removeAll { $0.id == item.id }
+            removeItemFromGrid(item.id)
         }
         pendingTrashItem = nil
         showTrashConfirm = false

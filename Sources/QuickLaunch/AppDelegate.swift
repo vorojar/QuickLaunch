@@ -103,10 +103,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func rescanApps() {
-        let s = AppState.shared
-        s.gridItems = s.appScanner.scanApplications()
-        s.sortByUsage()
-        s.save()
+        AppState.shared.rescan()
     }
 
     @objc private func quitApp() { NSApp.terminate(nil) }
@@ -211,7 +208,8 @@ final class LaunchpadWindow {
             backing: .buffered,
             defer: false
         )
-        w.level = .init(rawValue: NSWindow.Level.mainMenu.rawValue - 1)
+        // Below modalPanel (8) so system authorization dialogs can appear above
+        w.level = .init(rawValue: NSWindow.Level.modalPanel.rawValue - 1)
         w.isOpaque = false
         w.backgroundColor = .clear
         w.hasShadow = false
