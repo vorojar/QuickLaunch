@@ -113,11 +113,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
 
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2"
+        let repoURL = "https://github.com/vorojar/QuickLaunch"
 
         let alert = NSAlert()
         alert.messageText = L10n.aboutTitle
-        alert.informativeText = "\(L10n.aboutDescription)\n\n\(L10n.aboutVersion(version))\nhttps://github.com/vorojar/QuickLaunch"
+        alert.informativeText = "\(L10n.aboutDescription)\n\n\(L10n.aboutVersion(version))"
         alert.alertStyle = .informational
+
+        // Clickable GitHub link as accessory view
+        let linkButton = NSButton(frame: NSRect(x: 0, y: 0, width: 260, height: 20))
+        linkButton.title = repoURL
+        linkButton.bezelStyle = .inline
+        linkButton.isBordered = false
+        linkButton.attributedTitle = NSAttributedString(
+            string: repoURL,
+            attributes: [
+                .foregroundColor: NSColor.linkColor,
+                .underlineStyle: NSUnderlineStyle.single.rawValue,
+                .font: NSFont.systemFont(ofSize: 12),
+                .cursor: NSCursor.pointingHand
+            ]
+        )
+        linkButton.target = self
+        linkButton.action = #selector(openGitHub)
+        alert.accessoryView = linkButton
 
         if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
            let icon = NSImage(contentsOfFile: iconPath) {
@@ -126,6 +145,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         alert.addButton(withTitle: "OK")
         alert.runModal()
+    }
+
+    @objc private func openGitHub() {
+        NSWorkspace.shared.open(URL(string: "https://github.com/vorojar/QuickLaunch")!)
     }
 
     // MARK: - Global Hot Key

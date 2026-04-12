@@ -49,6 +49,37 @@ if [ -d "$PROJECT_DIR/Resources/zh-Hans.lproj" ]; then
     cp -r "$PROJECT_DIR/Resources/zh-Hans.lproj" "$APP_BUNDLE/Contents/Resources/"
 fi
 echo "==> Build complete: $APP_BUNDLE"
+
+# Read version from Info.plist
+VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP_BUNDLE/Contents/Info.plist")
+DMG_NAME="$PROJECT_DIR/QuickLaunch-v${VERSION}.dmg"
+
+echo "==> Creating DMG (v${VERSION})..."
+
+# Create temp folder with app + Applications symlink for drag-and-drop install
+DMG_STAGING="$BUILD_DIR/dmg-staging"
+rm -rf "$DMG_STAGING"
+mkdir -p "$DMG_STAGING"
+cp -r "$APP_BUNDLE" "$DMG_STAGING/"
+ln -s /Applications "$DMG_STAGING/Applications"
+
+# Create writable DMG, copy contents preserving symlinks, then convert to compressed
+rm -f "$DMG_NAME"
+DMG_RW="$BUILD_DIR/QuickLaunch-rw.dmg"
+rm -f "$DMG_RW"
+hdiutil create -size 200m -fs HFS+ -volname "QuickLaunch" "$DMG_RW"
+hdiutil attach "$DMG_RW" -nobrowse -quiet -mountpoint "$BUILD_DIR/dmg-mount"
+cp -R "$DMG_STAGING/QuickLaunch.app" "$BUILD_DIR/dmg-mount/"
+ln -s /Applications "$BUILD_DIR/dmg-mount/Applications"
+hdiutil detach "$BUILD_DIR/dmg-mount" -quiet
+hdiutil convert "$DMG_RW" -format UDZO -o "$DMG_NAME"
+rm -f "$DMG_RW"
+rm -rf "$DMG_STAGING"
+
+echo ""
+echo "==> Done!"
+echo "App:  $APP_BUNDLE"
+echo "DMG:  $DMG_NAME"
 echo ""
 echo "To run: open $APP_BUNDLE"
-echo "To install: cp -r $APP_BUNDLE /Applications/"
+echo "To install: open $DMG_NAME  (drag to Applications)"
