@@ -148,7 +148,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openGitHub() {
-        NSWorkspace.shared.open(URL(string: "https://github.com/vorojar/QuickLaunch")!)
+        NSWorkspace.shared.open(URL(string: "https://vorojar.github.io/QuickLaunch")!)
     }
 
     // MARK: - Global Hot Key

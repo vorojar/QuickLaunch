@@ -1,371 +1,452 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickLaunch - macOS App Launcher</title>
-  <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickLaunch — Fast Native App Launcher for macOS | macOS 快捷启动器</title>
+    <meta name="description" content="A fast, lightweight macOS app launcher — a better alternative to the built-in Launchpad. Pure Swift, zero dependencies, ~36 MB memory. 轻量级 macOS 原生应用启动器，替代系统自带 Launchpad。">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "QuickLaunch",
+      "description": "Fast native macOS app launcher. Launchpad alternative with pinyin search, auto organize, context menu. Pure Swift, zero dependencies.",
+      "url": "https://vorojar.github.io/QuickLaunch/",
+      "downloadUrl": "https://github.com/vorojar/QuickLaunch/releases",
+      "operatingSystem": "macOS",
+      "applicationCategory": "UtilitiesApplication",
+      "softwareVersion": "1.0.2",
+      "fileSize": "1.3MB",
+      "license": "https://opensource.org/licenses/MIT",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "vorojar",
+        "url": "https://github.com/vorojar"
+      }
+    }
+    </script>
+    <style>
+    :root { color-scheme: light; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
-      background: #fff;
-      color: #1d1d1f;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
-    .container { max-width: 980px; margin: 0 auto; padding: 0 22px; }
 
-    /* Header */
-    header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      background: rgba(255,255,255,0.8);
-      backdrop-filter: saturate(180%) blur(20px);
-      z-index: 100;
-      border-bottom: 1px solid rgba(0,0,0,0.1);
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #1a1a1a;
+        background: #fff;
     }
-    header .container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      height: 48px;
+
+    /* Language switcher */
+    .lang-switch {
+        position: fixed;
+        top: 16px;
+        right: 20px;
+        z-index: 100;
+        display: flex;
+        gap: 4px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 2px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
-    .logo {
-      font-size: 21px;
-      font-weight: 600;
-      color: #1d1d1f;
-      text-decoration: none;
-    }
-    nav { display: flex; gap: 28px; align-items: center; }
-    nav a {
-      font-size: 14px;
-      color: #1d1d1f;
-      text-decoration: none;
-      opacity: 0.8;
-    }
-    nav a:hover { opacity: 1; }
+
     .lang-btn {
-      background: none;
-      border: none;
-      color: #06c;
-      font-size: 14px;
-      cursor: pointer;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+        text-decoration: none;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .lang-btn.active {
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    .lang-btn:hover:not(.active) {
+        background: #f0f0f0;
     }
 
     /* Hero */
     .hero {
-      padding: 140px 0 60px;
-      text-align: center;
-      background: linear-gradient(180deg, #fbfbfd 0%, #fff 100%);
-    }
-    .hero h1 {
-      font-size: 56px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      margin-bottom: 16px;
-      color: #1d1d1f;
-    }
-    .hero .tagline {
-      font-size: 28px;
-      font-weight: 400;
-      color: #86868b;
-      margin-bottom: 40px;
-    }
-    .buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 12px 22px;
-      border-radius: 980px;
-      font-size: 17px;
-      font-weight: 400;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-    .btn-primary {
-      background: #0071e3;
-      color: #fff;
-    }
-    .btn-primary:hover { background: #0077ed; }
-    .btn-secondary {
-      background: transparent;
-      color: #0071e3;
-    }
-    .btn-secondary:hover { text-decoration: underline; }
-    .hotkey {
-      margin-top: 32px;
-      font-size: 17px;
-      color: #86868b;
-    }
-    .hotkey kbd {
-      display: inline-block;
-      background: #f5f5f7;
-      border: 1px solid #d2d2d7;
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-family: inherit;
-      font-size: 15px;
-      color: #1d1d1f;
-      margin: 0 2px;
-      box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+        text-align: center;
+        padding: 80px 24px 60px;
+        background: #fafafa;
     }
 
-    /* Story */
-    .story {
-      padding: 40px 0;
-      text-align: center;
-      background: #fff;
+    .hero-icon {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 20px;
+        border-radius: 22px;
+        overflow: hidden;
     }
-    .story blockquote {
-      font-size: 21px;
-      font-style: italic;
-      color: #1d1d1f;
-      max-width: 680px;
-      margin: 0 auto;
-      line-height: 1.6;
+
+    .hero-icon img {
+        width: 100%;
+        height: 100%;
     }
-    .story .author {
-      margin-top: 16px;
-      font-size: 14px;
-      color: #86868b;
+
+    .hero h1 {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
     }
+
+    .hero .tagline {
+        font-size: 20px;
+        color: #666;
+        max-width: 560px;
+        margin: 0 auto 36px;
+    }
+
+    .cta {
+        display: inline-flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .cta a {
+        display: inline-block;
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .cta-primary { background: #1a1a1a; color: #fff; }
+    .cta-primary:hover { background: #333; }
+    .cta-secondary { background: none; color: #1a1a1a; border: 1px solid #ddd; }
+    .cta-secondary:hover { background: #f5f5f5; }
 
     /* Screenshot */
     .screenshot {
-      padding: 40px 0 80px;
-      text-align: center;
-      background: #fff;
+        text-align: center;
+        padding: 40px 24px 60px;
+        background: #fafafa;
     }
+
     .screenshot img {
-      max-width: 100%;
-      border-radius: 18px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        max-width: 720px;
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    /* Stats */
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        padding: 48px 24px;
+        background: #fafafa;
+        flex-wrap: wrap;
+    }
+
+    .stat {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px 32px;
+        text-align: center;
+        min-width: 160px;
+    }
+
+    .stat .number {
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -1px;
+    }
+
+    .stat .label {
+        font-size: 14px;
+        color: #888;
+        margin-top: 4px;
     }
 
     /* Features */
     .features {
-      padding: 80px 0;
-      background: #f5f5f7;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 60px 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
     }
-    .features h2 {
-      text-align: center;
-      font-size: 48px;
-      font-weight: 600;
-      color: #1d1d1f;
-      margin-bottom: 16px;
+
+    .feature {
+        background: #f8f8f8;
+        border-radius: 12px;
+        padding: 28px;
     }
-    .features .subtitle {
-      text-align: center;
-      font-size: 21px;
-      color: #86868b;
-      margin-bottom: 60px;
+
+    .feature .icon { font-size: 28px; margin-bottom: 12px; }
+    .feature h3 { font-size: 17px; margin-bottom: 6px; }
+    .feature p { font-size: 14px; color: #666; line-height: 1.5; }
+
+    /* Comparison */
+    .comparison-section {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 24px 60px;
+        text-align: center;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+
+    .comparison-section h2 {
+        font-size: 28px;
+        margin-bottom: 24px;
     }
-    @media (max-width: 800px) {
-      .grid { grid-template-columns: repeat(2, 1fr); }
+
+    .comparison {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
     }
-    @media (max-width: 500px) {
-      .grid { grid-template-columns: 1fr; }
+
+    .comparison th, .comparison td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
     }
-    .card {
-      background: #fff;
-      padding: 32px;
-      border-radius: 18px;
-      text-align: center;
-    }
-    .card .icon {
-      width: 48px;
-      height: 48px;
-      margin: 0 auto 16px;
-    }
-    .card .icon svg {
-      width: 100%;
-      height: 100%;
-    }
-    .card h3 {
-      font-size: 21px;
-      font-weight: 600;
-      color: #1d1d1f;
-      margin-bottom: 8px;
-    }
-    .card p {
-      font-size: 14px;
-      color: #86868b;
-    }
+
+    .comparison th { background: #f8f8f8; font-weight: 600; }
+    .comparison .highlight { background: #f0faf0; }
 
     /* Install */
     .install {
-      padding: 80px 0;
-      text-align: center;
-      background: #fff;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 24px 60px;
+        text-align: center;
     }
-    .install h2 {
-      font-size: 48px;
-      font-weight: 600;
-      color: #1d1d1f;
-      margin-bottom: 12px;
+
+    .install h2 { font-size: 28px; margin-bottom: 20px; }
+    .install-steps p { margin: 8px 0; font-size: 16px; }
+    .install-steps code {
+        display: inline;
+        background: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 14px;
     }
-    .install .subtitle {
-      font-size: 21px;
-      color: #86868b;
-      margin-bottom: 40px;
-    }
-    .code {
-      display: inline-block;
-      background: #1d1d1f;
-      color: #fff;
-      padding: 16px 32px;
-      border-radius: 12px;
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-    .note {
-      font-size: 14px;
-      color: #86868b;
-    }
-    .note a { color: #0071e3; text-decoration: none; }
-    .note a:hover { text-decoration: underline; }
 
     /* Footer */
     footer {
-      padding: 20px 0;
-      text-align: center;
-      background: #f5f5f7;
-      font-size: 12px;
-      color: #86868b;
+        text-align: center;
+        padding: 32px 24px;
+        font-size: 14px;
+        color: #999;
+        border-top: 1px solid #eee;
     }
-    footer a { color: #424245; text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
 
+    footer a { color: inherit; }
+
+    /* Mobile */
     @media (max-width: 600px) {
-      .hero h1 { font-size: 36px; }
-      .hero .tagline { font-size: 19px; }
-      .features h2, .install h2 { font-size: 32px; }
+        .hero h1 { font-size: 32px; }
+        .hero .tagline { font-size: 17px; }
+        .stats { gap: 12px; }
+        .stat { min-width: 140px; padding: 20px; }
+        .stat .number { font-size: 28px; }
     }
-  </style>
+    </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <a href="#" class="logo">QuickLaunch</a>
-      <nav>
-        <a href="#features">Features</a>
-        <a href="#install">Install</a>
-        <a href="https://github.com/vorojar/QuickLaunch">GitHub</a>
-        <button class="lang-btn" onclick="toggleLang()">中文</button>
-      </nav>
+    <div class="lang-switch">
+        <a class="lang-btn active" data-lang="en">EN</a>
+        <a class="lang-btn" data-lang="zh">中文</a>
     </div>
-  </header>
 
-  <main>
-    <section class="hero">
-      <div class="container">
+    <div class="hero">
+        <div class="hero-icon">
+            <img src="https://raw.githubusercontent.com/vorojar/QuickLaunch/main/screenshots/icon.png" alt="QuickLaunch icon" onerror="this.parentElement.innerHTML='🚀'">
+        </div>
         <h1>QuickLaunch</h1>
-        <p class="tagline" id="tagline">Your apps. Instantly.</p>
-        <div class="buttons">
-          <a href="https://github.com/vorojar/QuickLaunch/releases/latest/download/QuickLaunch-v1.0.1.dmg" class="btn btn-primary" id="dl-btn">Download</a>
-          <a href="https://github.com/vorojar/QuickLaunch" class="btn btn-secondary">View on GitHub →</a>
+        <p class="tagline" data-en="A better Launchpad for macOS. Pure Swift, zero dependencies, lightning fast." data-zh="更好用的 macOS 启动台。纯 Swift 构建，零依赖，极速响应。">A better Launchpad for macOS. Pure Swift, zero dependencies, lightning fast.</p>
+        <div class="cta">
+            <a href="https://github.com/vorojar/QuickLaunch/releases/latest" class="cta-primary" data-en="Download" data-zh="下载">Download</a>
+            <a href="https://github.com/vorojar/QuickLaunch" class="cta-secondary" id="star-btn" data-en="★ Star on GitHub" data-zh="★ 在 GitHub 上 Star">★ Star on GitHub</a>
         </div>
-        <p class="hotkey"><kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>Space</kbd> <span id="hotkey-text">to launch</span></p>
-      </div>
-    </section>
-
-    <section class="story">
-      <div class="container">
-        <blockquote id="story-text">"macOS 26 removed Launchpad, and it's just so frustrating to use. So I made my own — and it's super sleek."</blockquote>
-        <p class="author">— Rosibo</p>
-      </div>
-    </section>
-
-    <section class="screenshot">
-      <div class="container">
-        <img src="screenshots/main.png" alt="QuickLaunch Screenshot">
-      </div>
-    </section>
-
-    <section class="features" id="features">
-      <div class="container">
-        <h2 id="feat-title">Features</h2>
-        <p class="subtitle" id="feat-sub">A better Launchpad experience.</p>
-        <div class="grid">
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#0071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="36" height="36" rx="8"/><circle cx="24" cy="24" r="8"/><path d="M24 6v4M24 38v4M6 24h4M38 24h4"/></svg></div>
-            <h3 id="f1">Beautiful</h3><p id="f1d">Full-screen with blurred wallpaper</p>
-          </div>
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#0071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M44 36V18a4 4 0 00-4-4H8a4 4 0 00-4 4v18a4 4 0 004 4h32a4 4 0 004-4z"/><path d="M14 14V8a4 4 0 014-4h12a4 4 0 014 4v6"/></svg></div>
-            <h3 id="f2">Folders</h3><p id="f2d">Drag apps to create folders</p>
-          </div>
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#0071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="14"/><path d="M30 30l14 14"/></svg></div>
-            <h3 id="f3">Search</h3><p id="f3d">Find apps instantly</p>
-          </div>
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#0071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><rect x="28" y="4" width="16" height="16" rx="3"/><rect x="4" y="28" width="16" height="16" rx="3"/><rect x="28" y="28" width="16" height="16" rx="3"/></svg></div>
-            <h3 id="f4">Organize</h3><p id="f4d">Auto-categorize with one click</p>
-          </div>
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#0071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="12" width="40" height="28" rx="4"/><path d="M12 24h6M20 24h4M26 24h10M12 32h4M18 32h12M32 32h4"/></svg></div>
-            <h3 id="f5">Hotkey</h3><p id="f5d">Launch from anywhere</p>
-          </div>
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 48 48" fill="none" stroke="#0071e3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 4v8M24 36v8"/><path d="M4 24h8M36 24h8"/><circle cx="24" cy="24" r="12"/><path d="M24 18v6l4 4"/></svg></div>
-            <h3 id="f6">Smart</h3><p id="f6d">Auto-detects new apps</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="install" id="install">
-      <div class="container">
-        <h2 id="install-title">Get QuickLaunch</h2>
-        <p class="subtitle" id="install-sub">Free and open source. Works on macOS Sonoma and later.</p>
-        <div class="code">brew install --cask quicklaunch</div>
-        <p class="note" id="install-note">Or <a href="https://github.com/vorojar/QuickLaunch/releases/latest">download DMG</a> directly</p>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container">
-      <p>Built with Swift & SwiftUI · <a href="https://github.com/vorojar/QuickLaunch">GitHub</a></p>
     </div>
-  </footer>
 
-  <script>
-    var zh = navigator.language.startsWith('zh');
-    var texts = {
-      tagline: ['Your apps. Instantly.', '你的应用，瞬间启动。'],
-      'story-text': ['"macOS 26 removed Launchpad, and it\'s just so frustrating to use. So I made my own — and it\'s super sleek."', '"macOS 26 移除了启动台，用起来太难受了。所以我自己做了一个——而且超级好用。"'],
-      'dl-btn': ['Download', '下载'],
-      'hotkey-text': ['to launch', '呼出'],
-      'feat-title': ['Features', '功能'],
-      'feat-sub': ['A better Launchpad experience.', '更好的启动台体验。'],
-      f1: ['Beautiful', '精美'], f1d: ['Full-screen with blurred wallpaper', '全屏模糊壁纸'],
-      f2: ['Folders', '文件夹'], f2d: ['Drag apps to create folders', '拖拽创建文件夹'],
-      f3: ['Search', '搜索'], f3d: ['Find apps instantly', '即时查找应用'],
-      f4: ['Organize', '整理'], f4d: ['Auto-categorize with one click', '一键自动分类'],
-      f5: ['Hotkey', '快捷键'], f5d: ['Launch from anywhere', '随处呼出'],
-      f6: ['Smart', '智能'], f6d: ['Auto-detects new apps', '自动检测新应用'],
-      'install-title': ['Get QuickLaunch', '获取 QuickLaunch'],
-      'install-sub': ['Free and open source. Works on macOS Sonoma and later.', '免费开源，支持 macOS Sonoma 及更高版本。'],
-      'install-note': ['Or <a href="https://github.com/vorojar/QuickLaunch/releases/latest">download DMG</a> directly', '或直接<a href="https://github.com/vorojar/QuickLaunch/releases/latest">下载 DMG</a>']
-    };
-    function setLang(isZh) {
-      for (var k in texts) {
-        var el = document.getElementById(k);
-        if (el) el.innerHTML = texts[k][isZh ? 1 : 0];
-      }
-      document.querySelector('.lang-btn').textContent = isZh ? 'EN' : '中文';
-    }
-    function toggleLang() { zh = !zh; setLang(zh); }
-    setLang(zh);
-  </script>
+    <div class="screenshot">
+        <img src="screenshots/main.png" alt="QuickLaunch screenshot">
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="number">1.3 MB</div>
+            <div class="label" data-en="App Size" data-zh="应用大小">App Size</div>
+        </div>
+        <div class="stat">
+            <div class="number">~36 MB</div>
+            <div class="label" data-en="Memory" data-zh="内存占用">Memory</div>
+        </div>
+        <div class="stat">
+            <div class="number">0.0%</div>
+            <div class="label" data-en="Idle CPU" data-zh="空闲 CPU">Idle CPU</div>
+        </div>
+        <div class="stat">
+            <div class="number">0</div>
+            <div class="label" data-en="Dependencies" data-zh="外部依赖">Dependencies</div>
+        </div>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <div class="icon">🔍</div>
+            <h3 data-en="Pinyin Search" data-zh="拼音搜索">Pinyin Search</h3>
+            <p data-en="Real-time search with Chinese pinyin initial support. Type and press Enter to launch instantly." data-zh="实时搜索，支持中文拼音首字母匹配。输入后按回车立即启动。">Real-time search with Chinese pinyin initial support. Type and press Enter to launch instantly.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">📂</div>
+            <h3 data-en="Auto Organize" data-zh="自动整理">Auto Organize</h3>
+            <p data-en="One-click automatic organization by app category. Developer Tools, Productivity, Games — all sorted." data-zh="一键按应用分类自动归类。开发工具、效率工具、游戏 — 自动归档。">One-click automatic organization by app category. Developer Tools, Productivity, Games — all sorted.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">🖱️</div>
+            <h3 data-en="Context Menu" data-zh="右键菜单">Context Menu</h3>
+            <p data-en="Right-click any app for Show in Finder, Get Info, Remove, or Move to Trash." data-zh="右键点击任意应用：在 Finder 中显示、显示简介、移除、移到废纸篓。">Right-click any app for Show in Finder, Get Info, Remove, or Move to Trash.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">⌨️</div>
+            <h3 data-en="Global Hotkey" data-zh="全局快捷键">Global Hotkey</h3>
+            <p data-en="Press Cmd+Shift+Space to open from anywhere. Status bar icon for quick access." data-zh="Cmd+Shift+Space 随时呼出。状态栏图标快捷访问。">Press Cmd+Shift+Space to open from anywhere. Status bar icon for quick access.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">📁</div>
+            <h3 data-en="Drag & Drop Folders" data-zh="拖拽文件夹">Drag & Drop Folders</h3>
+            <p data-en="Drag one app onto another to create folders. Rename, dissolve, or reorganize anytime." data-zh="将一个应用拖到另一个上自动创建文件夹。随时重命名、解散、重新整理。">Drag one app onto another to create folders. Rename, dissolve, or reorganize anytime.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">🔄</div>
+            <h3 data-en="Auto Sync" data-zh="自动同步">Auto Sync</h3>
+            <p data-en="Automatically detects newly installed and removed apps. Your launcher stays up to date." data-zh="自动检测新安装和卸载的应用。启动台始终保持最新。">Automatically detects newly installed and removed apps. Your launcher stays up to date.</p>
+        </div>
+    </div>
+
+    <div class="comparison-section">
+        <h2 data-en="vs. Native Launchpad" data-zh="对比原生 Launchpad">vs. Native Launchpad</h2>
+        <table class="comparison">
+            <thead>
+                <tr>
+                    <th data-en="Feature" data-zh="功能">Feature</th>
+                    <th>QuickLaunch</th>
+                    <th>Launchpad</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-en="Pinyin Search" data-zh="拼音搜索">Pinyin Search</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Auto Organize" data-zh="自动整理">Auto Organize</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Usage-based Sorting" data-zh="使用频率排序">Usage-based Sorting</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Context Menu" data-zh="右键菜单">Context Menu</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Status Bar" data-zh="状态栏入口">Status Bar</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Custom Hotkey" data-zh="自定义快捷键">Custom Hotkey</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Full-screen Blur" data-zh="全屏模糊背景">Full-screen Blur</td>
+                    <td class="highlight">✓</td>
+                    <td>✓</td>
+                </tr>
+                <tr>
+                    <td data-en="Drag & Drop Folders" data-zh="拖拽文件夹">Drag & Drop Folders</td>
+                    <td class="highlight">✓</td>
+                    <td>✓</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="install">
+        <h2 data-en="Installation" data-zh="安装">Installation</h2>
+        <div class="install-steps">
+            <p data-en="Homebrew (recommended) —" data-zh="Homebrew（推荐）—">Homebrew (recommended) —</p>
+            <p><code>brew install --cask quicklaunch</code></p>
+            <p style="margin-top: 24px;" data-en="Or download the DMG directly —" data-zh="或直接下载 DMG —">Or download the DMG directly —</p>
+            <p style="margin-top: 12px;">
+                <a href="https://github.com/vorojar/QuickLaunch/releases/latest" class="cta-primary" style="display: inline-block;" data-en="Download Latest Release" data-zh="下载最新版本">Download Latest Release</a>
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <span data-en="Made by " data-zh="由 ">Made by </span>
+            <a href="https://github.com/vorojar">vorojar</a>
+            <span data-en=" · MIT License · " data-zh=" 开发 · MIT License · "> · MIT License · </span>
+            <a href="https://github.com/vorojar/QuickLaunch">GitHub</a>
+            <span> · macOS 14+</span>
+        </p>
+    </footer>
+
+    <script>
+    (function() {
+        var lang = (navigator.language || '').startsWith('zh') ? 'zh' : 'en';
+
+        function apply(l) {
+            lang = l;
+            document.querySelectorAll('[data-' + l + ']').forEach(function(el) {
+                el.innerHTML = el.getAttribute('data-' + l);
+            });
+            document.querySelectorAll('.lang-btn').forEach(function(b) {
+                b.classList.toggle('active', b.dataset.lang === l);
+            });
+            document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(function(b) {
+            b.addEventListener('click', function(e) {
+                e.preventDefault();
+                apply(this.dataset.lang);
+            });
+        });
+
+        apply(lang);
+    })();
+
+    fetch("https://api.github.com/repos/vorojar/QuickLaunch")
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.stargazers_count !== undefined) {
+                document.getElementById("star-btn").innerHTML = "★ Star " + d.stargazers_count;
+            }
+        })
+        .catch(function() {});
+    </script>
 </body>
 </html>
