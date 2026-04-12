@@ -61,6 +61,7 @@ final class AppState: ObservableObject {
         dataStore.saveGridLayout(gridItems)
         dataStore.saveUsageStats(usageTracker.records)
         dataStore.saveHiddenApps(hiddenBundleIDs)
+        invalidateSearchCache()
     }
 
     func sortByUsage() {
@@ -184,8 +185,8 @@ final class AppState: ObservableObject {
             withAnimation(.spring(duration: 0.25)) {
                 gridItems.append(contentsOf: newApps)
             }
-            DispatchQueue.global(qos: .userInitiated).async { [self] in
-                iconCache.preload(newApps)
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                self?.iconCache.preload(newApps)
             }
         }
 
@@ -194,8 +195,8 @@ final class AppState: ObservableObject {
 
     /// Public rescan that preserves layout (used by menu bar "Rescan" button)
     func rescan() {
-        DispatchQueue.global(qos: .userInitiated).async { [self] in
-            mergeApps()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.mergeApps()
         }
     }
 
@@ -233,6 +234,11 @@ final class AppState: ObservableObject {
     }
 
     // MARK: - Search (cached)
+
+    private func invalidateSearchCache() {
+        cachedSearchText = ""
+        cachedSearchResult = []
+    }
 
     var filteredGridItems: [LaunchItem] {
         guard !searchText.isEmpty else { return gridItems }

@@ -47,7 +47,7 @@ final class DirectoryMonitor {
             self?.onChange()
         }
         debounceWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + debounceInterval, execute: work)
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + debounceInterval, execute: work)
     }
 
     func stopAll() {
