@@ -112,9 +112,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         launchpadWindow?.hide()
         NSApp.activate(ignoringOtherApps: true)
 
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2"
+
         let alert = NSAlert()
         alert.messageText = L10n.aboutTitle
-        alert.informativeText = "\(L10n.aboutDescription)\n\n\(L10n.aboutVersion("1.0.0"))"
+        alert.informativeText = "\(L10n.aboutDescription)\n\n\(L10n.aboutVersion(version))\nhttps://github.com/vorojar/QuickLaunch"
         alert.alertStyle = .informational
 
         if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
