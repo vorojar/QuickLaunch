@@ -17,7 +17,7 @@
 "dialog.remove" = "移除";
 "dialog.moveToTrash" = "移到废纸篓";
 "dialog.removeTitle" = "从启动台移除「%@」？";
-"dialog.removeMessage" = "应用将保留在"应用程序"文件夹中。";
+"dialog.removeMessage" = "应用将保留在「应用程序」文件夹中。";
 "dialog.trashTitle" = "将「%@」移到废纸篓？";
 "dialog.trashMessage" = "应用将被移到废纸篓，可从废纸篓恢复。";
 "bottom.quit" = "退出";

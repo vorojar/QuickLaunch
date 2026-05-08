@@ -1,6 +1,6 @@
 cask "quicklaunch" do
-  version "1.0.1"
-  sha256 "2fc73c8ec3cb4a3e5aa2fe1bb532ce475bda6a49e7fa5573aac715e2ee44bd9c"
+  version "1.0.3"
+  sha256 "4b2f406486225fd58a580f532726534658834175fddae1a73765e2982ba7884c"
 
   url "https://github.com/vorojar/QuickLaunch/releases/download/v#{version}/QuickLaunch-v#{version}.dmg"
   name "QuickLaunch"

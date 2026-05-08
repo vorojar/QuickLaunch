@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-05-08
+
+### Fixed
+- Hide QuickLaunch immediately when launching an app so slow target app startup does not make the launcher feel stuck.
+- Use system-localized app display names, including saved layouts, so searches like "活动监视器" work.
+- Include additional Apple system utility apps from CoreServices.
+- Fix zh-Hans string parsing for the remove confirmation message.
+
+### Improved
+- Focus the search field automatically when QuickLaunch opens.
+- Search now matches localized names, bundle identifiers, and original `.app` filenames with normalized matching.
+
 ### Fixed
 - Window level too high (mainMenu-1), blocking system authorization dialogs when launching new apps — lowered to below modalPanel
 - "Remove from LaunchPad" and "Move to Trash" not working for apps inside folders (only searched top-level grid)

@@ -56,7 +56,41 @@ final class AppState: ObservableObject {
         usageTracker.records = dataStore.loadUsageStats()
         hiddenBundleIDs = dataStore.loadHiddenApps()
         if saved == nil { sortByUsage() }
+        localizeLoadedAppNames()
         migrateFolderNames()
+    }
+
+    private func localizeLoadedAppNames() {
+        var updatedItems = gridItems
+        var changed = false
+
+        func updateName(for item: inout LaunchItem) {
+            guard item.kind == .app,
+                  let path = item.path,
+                  let localizedName = appScanner.localizedDisplayName(for: path),
+                  item.name != localizedName else {
+                return
+            }
+            item.name = localizedName
+            changed = true
+        }
+
+        for index in updatedItems.indices {
+            if updatedItems[index].kind == .folder {
+                guard var children = updatedItems[index].children else { continue }
+                for childIndex in children.indices {
+                    updateName(for: &children[childIndex])
+                }
+                updatedItems[index].children = children
+            } else {
+                updateName(for: &updatedItems[index])
+            }
+        }
+
+        if changed {
+            gridItems = updatedItems
+            save()
+        }
     }
 
     /// Update auto-organized folder names to match current system language.
@@ -155,6 +189,8 @@ final class AppState: ObservableObject {
     }
 
     private func applyMerge(scanned: [LaunchItem]) {
+        let namesChanged = updateExistingAppNames(using: scanned)
+
         var existingBIDs = Set<String>()
         for item in gridItems {
             if let bid = item.bundleIdentifier { existingBIDs.insert(bid) }
@@ -174,7 +210,7 @@ final class AppState: ObservableObject {
 
         let removedBIDs = existingBIDs.subtracting(scannedBIDs)
 
-        guard !newApps.isEmpty || !removedBIDs.isEmpty else { return }
+        guard namesChanged || !newApps.isEmpty || !removedBIDs.isEmpty else { return }
 
         if !removedBIDs.isEmpty {
             withAnimation(.spring(duration: 0.25)) {
@@ -212,6 +248,50 @@ final class AppState: ObservableObject {
         }
 
         save()
+    }
+
+    private func updateExistingAppNames(using scanned: [LaunchItem]) -> Bool {
+        let namesByBundleID = Dictionary(
+            uniqueKeysWithValues: scanned.compactMap { item -> (String, String)? in
+                guard let bundleID = item.bundleIdentifier else { return nil }
+                return (bundleID, item.name)
+            }
+        )
+        let namesByPath = Dictionary(
+            uniqueKeysWithValues: scanned.compactMap { item -> (String, String)? in
+                guard let path = item.path else { return nil }
+                return (path, item.name)
+            }
+        )
+
+        var updatedItems = gridItems
+        var changed = false
+
+        func updateName(for item: inout LaunchItem) {
+            guard item.kind == .app else { return }
+            let localizedName = item.bundleIdentifier.flatMap { namesByBundleID[$0] }
+                ?? item.path.flatMap { namesByPath[$0] }
+            guard let localizedName, item.name != localizedName else { return }
+            item.name = localizedName
+            changed = true
+        }
+
+        for index in updatedItems.indices {
+            if updatedItems[index].kind == .folder {
+                guard var children = updatedItems[index].children else { continue }
+                for childIndex in children.indices {
+                    updateName(for: &children[childIndex])
+                }
+                updatedItems[index].children = children
+            } else {
+                updateName(for: &updatedItems[index])
+            }
+        }
+
+        if changed {
+            gridItems = updatedItems
+        }
+        return changed
     }
 
     /// Public rescan that preserves layout (used by menu bar "Rescan" button)

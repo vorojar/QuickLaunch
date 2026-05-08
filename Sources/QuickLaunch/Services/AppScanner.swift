@@ -1,9 +1,11 @@
 import AppKit
+import CoreServices
 
 final class AppScanner {
     private let searchPaths: [String] = [
         "/Applications",
         "/System/Applications",
+        "/System/Library/CoreServices/Applications",
         NSHomeDirectory() + "/Applications"
     ]
 
@@ -17,6 +19,11 @@ final class AppScanner {
         }
 
         return items.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    func localizedDisplayName(for path: String) -> String? {
+        guard let bundle = Bundle(path: path) else { return nil }
+        return localizedDisplayName(for: path, bundle: bundle)
     }
 
     /// Recursively scan directory for .app bundles (max depth 3 to avoid going too deep).
@@ -49,9 +56,7 @@ final class AppScanner {
     private func makeItem(from path: String) -> LaunchItem? {
         guard let bundle = Bundle(path: path) else { return nil }
 
-        let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
-            ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
-            ?? ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+        let displayName = localizedDisplayName(for: path, bundle: bundle)
 
         let bundleID = bundle.bundleIdentifier
 
@@ -75,6 +80,32 @@ final class AppScanner {
             bundleIdentifier: bundleID,
             category: category
         )
+    }
+
+    private func localizedDisplayName(for path: String, bundle: Bundle) -> String {
+        spotlightDisplayName(for: path)
+            ?? fileManagerDisplayName(for: path)
+            ?? bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+            ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+    }
+
+    private func spotlightDisplayName(for path: String) -> String? {
+        guard let item = MDItemCreate(nil, path as CFString),
+              let value = MDItemCopyAttribute(item, kMDItemDisplayName) as? String else {
+            return nil
+        }
+        return normalizedAppName(value)
+    }
+
+    private func fileManagerDisplayName(for path: String) -> String? {
+        let name = FileManager.default.displayName(atPath: path)
+        guard !name.isEmpty else { return nil }
+        return normalizedAppName(name)
+    }
+
+    private func normalizedAppName(_ name: String) -> String {
+        name.hasSuffix(".app") ? (name as NSString).deletingPathExtension : name
     }
 
     /// Map category ID to localized folder name key, then resolve via L10n

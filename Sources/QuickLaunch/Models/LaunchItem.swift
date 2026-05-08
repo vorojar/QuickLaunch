@@ -34,18 +34,36 @@ struct LaunchItem: Identifiable, Codable, Hashable {
     }
 
     func matchesSearch(_ query: String) -> Bool {
-        if name.lowercased().contains(query) { return true }
-        if let bid = bundleIdentifier, bid.lowercased().contains(query) { return true }
+        let normalizedQuery = normalizedSearchText(query)
+        if matches(name, query: query, normalizedQuery: normalizedQuery) { return true }
+        if let bid = bundleIdentifier, matches(bid, query: query, normalizedQuery: normalizedQuery) { return true }
+        if let path {
+            let fileName = ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+            if matches(fileName, query: query, normalizedQuery: normalizedQuery) { return true }
+        }
 
         // Pinyin initial matching for Chinese names
         let initials = pinyinInitials(for: name)
-        if !initials.isEmpty && initials.contains(query) { return true }
+        if !initials.isEmpty && initials.contains(normalizedQuery) { return true }
 
         // Check folder children
         if let children {
             return children.contains { $0.matchesSearch(query) }
         }
         return false
+    }
+
+    private func matches(_ value: String, query: String, normalizedQuery: String) -> Bool {
+        let lowercased = value.lowercased()
+        if lowercased.contains(query) { return true }
+        guard !normalizedQuery.isEmpty else { return false }
+        return normalizedSearchText(value).contains(normalizedQuery)
+    }
+
+    private func normalizedSearchText(_ value: String) -> String {
+        value
+            .folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: .current)
+            .filter { $0.isLetter || $0.isNumber }
     }
 
     private func pinyinInitials(for text: String) -> String {

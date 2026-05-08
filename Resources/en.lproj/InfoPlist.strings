@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "QuickLaunch";
+"CFBundleName" = "QuickLaunch";
+"NSAppleEventsUsageDescription" = "QuickLaunch needs access to control applications.";

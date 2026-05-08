@@ -6,6 +6,7 @@ struct LaunchpadRootView: View {
 
     @State private var showContent = false
     @State private var folderPositions: [UUID: CGRect] = [:]
+    @FocusState private var isSearchFocused: Bool
 
     var body: some View {
         GeometryReader { geo in
@@ -53,10 +54,20 @@ struct LaunchpadRootView: View {
             }
             .onAppear {
                 withAnimation(.spring(duration: 0.3, bounce: 0.08)) { showContent = true }
+                focusSearchField()
             }
             .onChange(of: appState.isVisible) { _, v in
-                if v { withAnimation(.spring(duration: 0.3, bounce: 0.08)) { showContent = true } }
+                if v {
+                    withAnimation(.spring(duration: 0.3, bounce: 0.08)) { showContent = true }
+                    focusSearchField()
+                }
             }
+        }
+    }
+
+    private func focusSearchField() {
+        DispatchQueue.main.async {
+            isSearchFocused = true
         }
     }
 
@@ -65,6 +76,16 @@ struct LaunchpadRootView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             appState.exitJiggleMode()
             onDismiss()
+        }
+    }
+
+    private func launchAndDismiss(_ item: LaunchItem) {
+        guard item.path != nil else { return }
+        showContent = false
+        appState.exitJiggleMode()
+        onDismiss()
+        DispatchQueue.main.async {
+            appState.launchItem(item)
         }
     }
 
@@ -94,9 +115,10 @@ struct LaunchpadRootView: View {
                 .foregroundStyle(.white.opacity(0.5)).font(.system(size: 14))
             TextField(L10n.searchPlaceholder, text: $appState.searchText)
                 .textFieldStyle(.plain).font(.system(size: 15)).foregroundStyle(.white)
+                .focused($isSearchFocused)
                 .onSubmit {
                     if let first = appState.filteredGridItems.first {
-                        appState.launchItem(first); onDismiss()
+                        launchAndDismiss(first)
                     }
                 }
             if !appState.searchText.isEmpty {
@@ -194,7 +216,7 @@ struct LaunchpadRootView: View {
                 iconImage: appState.iconCache.icon(for: item),
                 iconSize: iconSize,
                 isDropTarget: appState.dragTargetID == item.id,
-                onLaunch: { appState.launchItem(item); dismissLaunchpad() }
+                onLaunch: { launchAndDismiss(item) }
             )
             .dropDestination(for: String.self) { ids, _ in
                 // Drop on app icon → create folder
@@ -237,7 +259,7 @@ struct LaunchpadRootView: View {
                 FolderExpandedView(
                     folder: folder,
                     onClose: { appState.expandedFolderID = nil },
-                    onLaunchChild: { c in appState.launchItem(c); dismissLaunchpad() },
+                    onLaunchChild: { c in launchAndDismiss(c) },
                     onRemoveChild: { c in appState.removeFromFolder(item: c, folderID: folder.id) },
                     onRename: { n in appState.renameFolder(id: folder.id, newName: n) }
                 )

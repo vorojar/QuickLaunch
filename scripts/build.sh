@@ -6,6 +6,8 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/.build"
 APP_NAME="QuickLaunch"
 APP_BUNDLE="$PROJECT_DIR/$APP_NAME.app"
+DMG_VOLUME_NAME="QuickLaunch Installer"
+DMG_MOUNT="/Volumes/$DMG_VOLUME_NAME"
 
 echo "==> Building $APP_NAME..."
 cd "$PROJECT_DIR"
@@ -48,6 +50,7 @@ fi
 if [ -d "$PROJECT_DIR/Resources/zh-Hans.lproj" ]; then
     cp -r "$PROJECT_DIR/Resources/zh-Hans.lproj" "$APP_BUNDLE/Contents/Resources/"
 fi
+xattr -cr "$APP_BUNDLE"
 echo "==> Build complete: $APP_BUNDLE"
 
 # Read version from Info.plist
@@ -60,24 +63,24 @@ echo "==> Creating DMG (v${VERSION})..."
 DMG_STAGING="$BUILD_DIR/dmg-staging"
 rm -rf "$DMG_STAGING"
 mkdir -p "$DMG_STAGING"
-cp -r "$APP_BUNDLE" "$DMG_STAGING/"
+rsync -a "$APP_BUNDLE" "$DMG_STAGING/"
 ln -s /Applications "$DMG_STAGING/Applications"
 
 # Create writable DMG, copy contents, configure Finder view, then convert
 rm -f "$DMG_NAME"
 DMG_RW="$BUILD_DIR/QuickLaunch-rw.dmg"
 rm -f "$DMG_RW"
-hdiutil create -size 200m -fs HFS+ -volname "QuickLaunch" "$DMG_RW"
+hdiutil create -size 200m -fs HFS+ -volname "$DMG_VOLUME_NAME" "$DMG_RW"
 
 # Mount WITHOUT -nobrowse so Finder can see and configure it
 hdiutil attach "$DMG_RW" -quiet
-cp -R "$DMG_STAGING/QuickLaunch.app" "/Volumes/QuickLaunch/"
-ln -s /Applications "/Volumes/QuickLaunch/Applications"
+rsync -a "$DMG_STAGING/QuickLaunch.app" "$DMG_MOUNT/"
+ln -s /Applications "$DMG_MOUNT/Applications"
 
 # Configure Finder window: compact size, icon view, icon positions
 osascript <<'APPLESCRIPT'
 tell application "Finder"
-    tell disk "QuickLaunch"
+    tell disk "QuickLaunch Installer"
         open
         set current view of container window to icon view
         set toolbar visible of container window to false
@@ -99,7 +102,7 @@ end tell
 APPLESCRIPT
 
 sync
-hdiutil detach "/Volumes/QuickLaunch" -quiet
+hdiutil detach "$DMG_MOUNT" -quiet
 hdiutil convert "$DMG_RW" -format UDZO -o "$DMG_NAME"
 rm -f "$DMG_RW"
 rm -rf "$DMG_STAGING"

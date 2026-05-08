@@ -112,7 +112,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         launchpadWindow?.hide()
         NSApp.activate(ignoringOtherApps: true)
 
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.2"
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.3"
         let repoURL = "https://github.com/vorojar/QuickLaunch"
 
         let alert = NSAlert()
