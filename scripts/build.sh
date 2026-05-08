@@ -9,6 +9,13 @@ APP_BUNDLE="$PROJECT_DIR/$APP_NAME.app"
 DMG_VOLUME_NAME="QuickLaunch Installer"
 DMG_MOUNT="/Volumes/$DMG_VOLUME_NAME"
 
+cleanup_dmg_mounts() {
+    for mount_dir in "$DMG_MOUNT" "$DMG_MOUNT "[0-9]*; do
+        [ -d "$mount_dir" ] || continue
+        hdiutil detach "$mount_dir" -quiet 2>/dev/null || hdiutil detach "$mount_dir" -force -quiet 2>/dev/null || true
+    done
+}
+
 echo "==> Building $APP_NAME..."
 cd "$PROJECT_DIR"
 swift build -c release
@@ -69,11 +76,13 @@ ln -s /Applications "$DMG_STAGING/Applications"
 # Create writable DMG, copy contents, configure Finder view, then convert
 rm -f "$DMG_NAME"
 DMG_RW="$BUILD_DIR/QuickLaunch-rw.dmg"
+cleanup_dmg_mounts
 rm -f "$DMG_RW"
 hdiutil create -size 200m -fs HFS+ -volname "$DMG_VOLUME_NAME" "$DMG_RW"
 
 # Mount WITHOUT -nobrowse so Finder can see and configure it
 hdiutil attach "$DMG_RW" -quiet
+trap cleanup_dmg_mounts EXIT
 rsync -a "$DMG_STAGING/QuickLaunch.app" "$DMG_MOUNT/"
 ln -s /Applications "$DMG_MOUNT/Applications"
 
@@ -103,6 +112,7 @@ APPLESCRIPT
 
 sync
 hdiutil detach "$DMG_MOUNT" -quiet
+trap - EXIT
 hdiutil convert "$DMG_RW" -format UDZO -o "$DMG_NAME"
 rm -f "$DMG_RW"
 rm -rf "$DMG_STAGING"

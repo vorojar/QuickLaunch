@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-05-08
+
+### Fixed
+- Hide QuickLaunch when another app becomes active, matching the expected Launchpad-style behavior.
+- Clean up stale QuickLaunch Installer DMG mounts before packaging so repeat builds do not fail on read-only volumes.
+
 ## [1.0.3] - 2026-05-08
 
 ### Fixed

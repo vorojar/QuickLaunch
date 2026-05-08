@@ -45,6 +45,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return false
     }
 
+    func applicationDidResignActive(_ notification: Notification) {
+        launchpadWindow?.hideIfVisible()
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         if let hotKeyRef { UnregisterEventHotKey(hotKeyRef) }
     }
@@ -112,7 +116,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         launchpadWindow?.hide()
         NSApp.activate(ignoringOtherApps: true)
 
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.3"
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.4"
         let repoURL = "https://github.com/vorojar/QuickLaunch"
 
         let alert = NSAlert()
@@ -183,6 +187,10 @@ final class LaunchpadWindow {
     private let appState = AppState.shared
     private var isAnimating = false
 
+    var isVisible: Bool {
+        window?.isVisible == true
+    }
+
     func toggle() {
         guard !isAnimating else { return }
         if let w = window, w.isVisible { hide() } else { show() }
@@ -211,8 +219,13 @@ final class LaunchpadWindow {
         } completionHandler: { [weak self] in self?.isAnimating = false }
     }
 
+    func hideIfVisible() {
+        guard isVisible else { return }
+        hide()
+    }
+
     func hide() {
-        guard let w = window else { return }
+        guard let w = window, w.isVisible else { return }
         isAnimating = true
         NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.12
