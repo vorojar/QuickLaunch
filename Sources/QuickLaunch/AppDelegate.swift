@@ -239,6 +239,15 @@ final class LaunchpadWindow {
         })
     }
 
+    func hideImmediately() {
+        guard let w = window, w.isVisible else { return }
+        isAnimating = false
+        w.alphaValue = 0
+        w.orderOut(nil)
+        appState.isVisible = false
+        appState.exitJiggleMode()
+    }
+
     private func createWindow() {
         let w = KeyableWindow(
             contentRect: NSScreen.main?.frame ?? .zero,
@@ -256,7 +265,10 @@ final class LaunchpadWindow {
         w.acceptsMouseMovedEvents = true
 
         let hosting = NSHostingView(
-            rootView: LaunchpadRootView(onDismiss: { [weak self] in self?.hide() })
+            rootView: LaunchpadRootView(
+                onDismiss: { [weak self] in self?.hide() },
+                onImmediateDismiss: { [weak self] in self?.hideImmediately() }
+            )
                 .environmentObject(appState)
         )
         hosting.wantsLayer = true

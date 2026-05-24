@@ -8,12 +8,21 @@ APP_NAME="QuickLaunch"
 APP_BUNDLE="$PROJECT_DIR/$APP_NAME.app"
 DMG_VOLUME_NAME="QuickLaunch Installer"
 DMG_MOUNT="/Volumes/$DMG_VOLUME_NAME"
+CODESIGN_IDENTITY="${CODESIGN_IDENTITY:--}"
 
 cleanup_dmg_mounts() {
     for mount_dir in "$DMG_MOUNT" "$DMG_MOUNT "[0-9]*; do
         [ -d "$mount_dir" ] || continue
         hdiutil detach "$mount_dir" -quiet 2>/dev/null || hdiutil detach "$mount_dir" -force -quiet 2>/dev/null || true
     done
+}
+
+sign_app_bundle() {
+    if [ "$CODESIGN_IDENTITY" = "-" ]; then
+        codesign --force --deep --sign - "$APP_BUNDLE"
+    else
+        codesign --force --deep --options runtime --timestamp --sign "$CODESIGN_IDENTITY" "$APP_BUNDLE"
+    fi
 }
 
 echo "==> Building $APP_NAME..."
@@ -58,6 +67,8 @@ if [ -d "$PROJECT_DIR/Resources/zh-Hans.lproj" ]; then
     cp -r "$PROJECT_DIR/Resources/zh-Hans.lproj" "$APP_BUNDLE/Contents/Resources/"
 fi
 xattr -cr "$APP_BUNDLE"
+echo "==> Signing app bundle..."
+sign_app_bundle
 echo "==> Build complete: $APP_BUNDLE"
 
 # Read version from Info.plist
@@ -114,6 +125,10 @@ sync
 hdiutil detach "$DMG_MOUNT" -quiet
 trap - EXIT
 hdiutil convert "$DMG_RW" -format UDZO -o "$DMG_NAME"
+if [ "$CODESIGN_IDENTITY" != "-" ]; then
+    echo "==> Signing DMG..."
+    codesign --force --timestamp --sign "$CODESIGN_IDENTITY" "$DMG_NAME"
+fi
 rm -f "$DMG_RW"
 rm -rf "$DMG_STAGING"
 

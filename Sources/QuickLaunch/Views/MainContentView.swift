@@ -3,6 +3,7 @@ import SwiftUI
 struct LaunchpadRootView: View {
     @EnvironmentObject private var appState: AppState
     var onDismiss: () -> Void
+    var onImmediateDismiss: () -> Void
 
     @State private var showContent = false
     @State private var folderPositions: [UUID: CGRect] = [:]
@@ -83,7 +84,7 @@ struct LaunchpadRootView: View {
         guard item.path != nil else { return }
         showContent = false
         appState.exitJiggleMode()
-        onDismiss()
+        onImmediateDismiss()
         DispatchQueue.main.async {
             appState.launchItem(item)
         }

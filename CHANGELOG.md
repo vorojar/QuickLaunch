@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-05-24
+
+### Fixed
+- Remove the remaining launch-click fade-out so QuickLaunch disappears immediately before the target app starts opening.
+
 ## [1.0.4] - 2026-05-08
 
 ### Fixed
