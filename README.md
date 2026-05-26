@@ -2,7 +2,7 @@
 
 **English** | [中文](README_ZH.md)
 
-> A fast, lightweight, native app launcher for macOS — a better alternative to the built-in Launchpad. Pure Swift, zero dependencies, ~36 MB memory.
+> A signed and notarized native macOS app launcher. A faster, more practical Launchpad alternative with pinyin search, folders, instant launch feedback, and zero external dependencies.
 
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
@@ -13,7 +13,15 @@
 
 ## Why QuickLaunch?
 
-macOS Launchpad lacks pinyin search, category-based organization, context menus, and customizable hotkeys. QuickLaunch fills these gaps while keeping the same smooth, native feel.
+macOS Launchpad lacks pinyin search, category-based organization, context menus, and customizable hotkeys. QuickLaunch fills these gaps while keeping the same smooth, native feel. When you launch an app, QuickLaunch disappears immediately so slow target-app startup never feels like launcher lag.
+
+## Latest Release
+
+**v1.0.5** focuses on launch responsiveness and release quality:
+
+- QuickLaunch now hides immediately when you click an app, before the target app starts opening.
+- The distributed DMG is Developer ID signed, notarized, and stapled.
+- SHA256: `028949fbfb2ff2a1ca1ac67b8ab73a5441515f410f3265ee4c9389bd9fe92324`
 
 ### vs. Native Launchpad
 
@@ -38,6 +46,7 @@ macOS Launchpad lacks pinyin search, category-based organization, context menus,
 - **Drag & Drop** - Reorder apps by dragging, create folders by dropping one app onto another
 - **Folders** - Organize apps into folders, rename them, dissolve when needed
 - **Search** - Real-time filtering with Chinese pinyin support
+- **Instant Launch Feedback** - QuickLaunch hides immediately after you click an app
 - **Auto Organize** - One-click automatic organization by app category
 - **Global Hotkey** - Press `Cmd+Shift+Space` to launch from anywhere
 - **Status Bar** - Quick access from menu bar
@@ -47,17 +56,17 @@ macOS Launchpad lacks pinyin search, category-based organization, context menus,
 
 ## Installation
 
-### Method 1: Homebrew (Recommended)
-
-```bash
-brew install --cask quicklaunch
-```
-
-### Method 2: Direct Download
+### Method 1: Direct Download (Recommended)
 
 1. Download the latest [QuickLaunch.dmg](https://github.com/vorojar/QuickLaunch/releases/latest)
 2. Open the DMG and drag `QuickLaunch.app` to Applications folder
 3. Double-click to launch
+
+The release DMG is signed and notarized with Apple Developer ID.
+
+### Method 2: Homebrew Cask Recipe
+
+The repository includes a cask recipe at `Casks/quicklaunch.rb` for tap or submission workflows. The public Homebrew cask may not be available in every registry yet.
 
 ## Usage
 
@@ -78,8 +87,8 @@ brew install --cask quicklaunch
 
 | Metric | Value |
 |--------|-------|
-| App Size | 1.3 MB |
-| DMG Size | 454 KB |
+| App Bundle | 1.4 MB |
+| DMG Size | 476 KB |
 | Memory | ~36 MB |
 | Idle CPU | 0.0% |
 | Dependencies | None |
@@ -101,6 +110,9 @@ cd QuickLaunch
 # Build and create app bundle + DMG
 ./scripts/build.sh
 
+# Maintainer release packaging: build, remote-sign, notarize, staple, and validate
+./scripts/release.sh
+
 # Run
 open QuickLaunch.app
 ```
@@ -121,7 +133,6 @@ MIT License
 
 - [Website](https://vorojar.github.io/QuickLaunch)
 - [Releases](https://github.com/vorojar/QuickLaunch/releases)
-- [Homebrew Cask](https://github.com/Homebrew/homebrew-cask/pull/247853)
 
 ---
 

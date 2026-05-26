@@ -2,7 +2,7 @@
 
 [English](README.md) | **中文**
 
-> 一款轻量级 macOS 原生应用启动器，替代系统自带 Launchpad。纯 Swift 构建，零依赖，内存仅占 36MB。
+> 一款已签名并公证的 macOS 原生应用启动器。比系统 Launchpad 更实用：支持拼音搜索、文件夹、即时启动反馈，纯 Swift 构建，零外部依赖。
 
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
@@ -13,7 +13,15 @@
 
 ## 为什么选择 QuickLaunch？
 
-macOS 自带的 Launchpad 功能有限：不支持拼音搜索、无法按分类整理、没有右键菜单、无法自定义快捷键。QuickLaunch 解决了这些痛点，同时保持了原生 Launchpad 的流畅体验。
+macOS 自带的 Launchpad 功能有限：不支持拼音搜索、无法按分类整理、没有右键菜单、无法自定义快捷键。QuickLaunch 解决了这些痛点，同时保持了原生 Launchpad 的流畅体验。点击应用后，QuickLaunch 会立即消失，目标应用启动慢也不会让用户误以为启动器卡住。
+
+## 最新版本
+
+**v1.0.5** 聚焦启动反馈和发布质量：
+
+- 点击应用后 QuickLaunch 立即收起，再启动目标应用。
+- 发布 DMG 已使用 Apple Developer ID 签名、公证并 staple。
+- SHA256：`028949fbfb2ff2a1ca1ac67b8ab73a5441515f410f3265ee4c9389bd9fe92324`
 
 ### 对比原生 Launchpad
 
@@ -38,6 +46,7 @@ macOS 自带的 Launchpad 功能有限：不支持拼音搜索、无法按分类
 - **拖拽排序** - 拖拽排列应用，拖放到一起自动创建文件夹
 - **文件夹管理** - 创建、重命名、解散文件夹
 - **智能搜索** - 实时过滤，支持中文拼音首字母搜索
+- **即时启动反馈** - 点击应用后 QuickLaunch 立即收起
 - **自动整理** - 一键按应用分类自动归类到文件夹
 - **全局快捷键** - `Cmd+Shift+Space` 随时呼出
 - **状态栏常驻** - 菜单栏快捷入口
@@ -47,17 +56,17 @@ macOS 自带的 Launchpad 功能有限：不支持拼音搜索、无法按分类
 
 ## 安装
 
-### 方式一：Homebrew（推荐）
-
-```bash
-brew install --cask quicklaunch
-```
-
-### 方式二：直接下载
+### 方式一：直接下载（推荐）
 
 1. 下载最新的 [QuickLaunch.dmg](https://github.com/vorojar/QuickLaunch/releases/latest)
 2. 打开 DMG，将 `QuickLaunch.app` 拖入「应用程序」文件夹
 3. 双击启动
+
+发布 DMG 已使用 Apple Developer ID 签名并完成公证。
+
+### 方式二：Homebrew Cask 配方
+
+仓库内维护了 `Casks/quicklaunch.rb`，用于 tap 或提交 Homebrew 的分发流程。公开 Homebrew cask 可能还未在所有 registry 中可用。
 
 ## 使用方法
 
@@ -78,8 +87,8 @@ brew install --cask quicklaunch
 
 | 指标 | 数值 |
 |------|------|
-| 应用体积 | 1.3 MB |
-| 安装包 | 454 KB |
+| 应用包体积 | 1.4 MB |
+| 安装包 | 476 KB |
 | 内存占用 | ~36 MB |
 | 空闲 CPU | 0.0% |
 | 外部依赖 | 无 |
@@ -100,6 +109,12 @@ cd QuickLaunch
 open QuickLaunch.app
 ```
 
+维护者发布打包：
+
+```bash
+./scripts/release.sh
+```
+
 ## 数据存储
 
 用户数据保存在 `~/Library/Application Support/QuickLaunch/`：
@@ -112,7 +127,6 @@ open QuickLaunch.app
 
 - [官方网站](https://vorojar.github.io/QuickLaunch)
 - [版本下载](https://github.com/vorojar/QuickLaunch/releases)
-- [Homebrew Cask](https://github.com/Homebrew/homebrew-cask/pull/247853)
 
 ## 开源协议
 
