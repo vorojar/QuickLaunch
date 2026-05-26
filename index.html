@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickLaunch - Signed Native App Launcher for macOS | macOS 快捷启动器</title>
+    <meta name="description" content="A signed and notarized native macOS app launcher. A fast Launchpad alternative with pinyin search, folders, instant launch feedback, and zero external dependencies. 已签名并公证的 macOS 原生应用启动器。">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "QuickLaunch",
+      "description": "Signed and notarized native macOS app launcher. Launchpad alternative with pinyin search, folders, instant launch feedback, auto organize, and context menu.",
+      "url": "https://vorojar.github.io/QuickLaunch/",
+      "downloadUrl": "https://github.com/vorojar/QuickLaunch/releases/latest",
+      "operatingSystem": "macOS",
+      "applicationCategory": "UtilitiesApplication",
+      "softwareVersion": "1.0.5",
+      "fileSize": "476KB",
+      "license": "https://opensource.org/licenses/MIT",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "vorojar",
+        "url": "https://github.com/vorojar"
+      }
+    }
+    </script>
+    <style>
+    :root { color-scheme: light; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        color: #1a1a1a;
+        background: #fff;
+    }
+
+    /* Language switcher */
+    .lang-switch {
+        position: fixed;
+        top: 16px;
+        right: 20px;
+        z-index: 100;
+        display: flex;
+        gap: 4px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 2px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .lang-btn {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+        text-decoration: none;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .lang-btn.active {
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    .lang-btn:hover:not(.active) {
+        background: #f0f0f0;
+    }
+
+    /* Hero */
+    .hero {
+        text-align: center;
+        padding: 80px 24px 60px;
+        background: #fafafa;
+    }
+
+    .hero-icon {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 20px;
+        border-radius: 22px;
+        overflow: hidden;
+    }
+
+    .hero-icon img {
+        width: 100%;
+        height: 100%;
+    }
+
+    .hero h1 {
+        font-size: 48px;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+    }
+
+    .hero .tagline {
+        font-size: 20px;
+        color: #666;
+        max-width: 560px;
+        margin: 0 auto 36px;
+    }
+
+    .cta {
+        display: inline-flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .cta a {
+        display: inline-block;
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .cta-primary { background: #1a1a1a; color: #fff; }
+    .cta-primary:hover { background: #333; }
+    .cta-secondary { background: none; color: #1a1a1a; border: 1px solid #ddd; }
+    .cta-secondary:hover { background: #f5f5f5; }
+
+    /* Screenshot */
+    .screenshot {
+        text-align: center;
+        padding: 40px 24px 60px;
+        background: #fafafa;
+    }
+
+    .screenshot img {
+        max-width: 720px;
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    /* Stats */
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        padding: 48px 24px;
+        background: #fafafa;
+        flex-wrap: wrap;
+    }
+
+    .stat {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px 32px;
+        text-align: center;
+        min-width: 160px;
+    }
+
+    .stat .number {
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -1px;
+    }
+
+    .stat .label {
+        font-size: 14px;
+        color: #888;
+        margin-top: 4px;
+    }
+
+    /* Features */
+    .features {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 60px 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .feature {
+        background: #f8f8f8;
+        border-radius: 12px;
+        padding: 28px;
+    }
+
+    .feature .icon { font-size: 28px; margin-bottom: 12px; }
+    .feature h3 { font-size: 17px; margin-bottom: 6px; }
+    .feature p { font-size: 14px; color: #666; line-height: 1.5; }
+
+    /* Comparison */
+    .comparison-section {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 24px 60px;
+        text-align: center;
+    }
+
+    .comparison-section h2 {
+        font-size: 28px;
+        margin-bottom: 24px;
+    }
+
+    .comparison {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+    }
+
+    .comparison th, .comparison td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    .comparison th { background: #f8f8f8; font-weight: 600; }
+    .comparison .highlight { background: #f0faf0; }
+
+    /* Install */
+    .install {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 40px 24px 60px;
+        text-align: center;
+    }
+
+    .install h2 { font-size: 28px; margin-bottom: 20px; }
+    .install-steps p { margin: 8px 0; font-size: 16px; }
+    .install-steps code {
+        display: inline;
+        background: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    /* Footer */
+    footer {
+        text-align: center;
+        padding: 32px 24px;
+        font-size: 14px;
+        color: #999;
+        border-top: 1px solid #eee;
+    }
+
+    footer a { color: inherit; }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+        .hero h1 { font-size: 32px; }
+        .hero .tagline { font-size: 17px; }
+        .stats { gap: 12px; }
+        .stat { min-width: 140px; padding: 20px; }
+        .stat .number { font-size: 28px; }
+    }
+    </style>
+</head>
+<body>
+    <div class="lang-switch">
+        <a class="lang-btn active" data-lang="en">EN</a>
+        <a class="lang-btn" data-lang="zh">中文</a>
+    </div>
+
+    <div class="hero">
+        <div class="hero-icon">
+            <img src="screenshots/icon.png" alt="QuickLaunch icon">
+        </div>
+        <h1>QuickLaunch</h1>
+        <p class="tagline" data-en="A signed, notarized, better Launchpad for macOS. Pure Swift, zero dependencies, instant launch feedback." data-zh="已签名并公证的 macOS 启动台替代品。纯 Swift 构建，零依赖，点击应用立即收起。">A signed, notarized, better Launchpad for macOS. Pure Swift, zero dependencies, instant launch feedback.</p>
+        <div class="cta">
+            <a href="https://github.com/vorojar/QuickLaunch/releases/latest" class="cta-primary" data-en="Download" data-zh="下载">Download</a>
+            <a href="https://github.com/vorojar/QuickLaunch" class="cta-secondary" id="star-btn" data-en="★ Star on GitHub" data-zh="★ 在 GitHub 上 Star">★ Star on GitHub</a>
+        </div>
+    </div>
+
+    <div class="screenshot">
+        <img src="screenshots/main.png" alt="QuickLaunch screenshot">
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="number">1.4 MB</div>
+            <div class="label" data-en="App Bundle" data-zh="应用包体积">App Bundle</div>
+        </div>
+        <div class="stat">
+            <div class="number">~36 MB</div>
+            <div class="label" data-en="Memory" data-zh="内存占用">Memory</div>
+        </div>
+        <div class="stat">
+            <div class="number">0.0%</div>
+            <div class="label" data-en="Idle CPU" data-zh="空闲 CPU">Idle CPU</div>
+        </div>
+        <div class="stat">
+            <div class="number">0</div>
+            <div class="label" data-en="Dependencies" data-zh="外部依赖">Dependencies</div>
+        </div>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <div class="icon">🔍</div>
+            <h3 data-en="Pinyin Search" data-zh="拼音搜索">Pinyin Search</h3>
+            <p data-en="Real-time search with Chinese pinyin initial support. Type and press Enter to launch instantly." data-zh="实时搜索，支持中文拼音首字母匹配。输入后按回车立即启动。">Real-time search with Chinese pinyin initial support. Type and press Enter to launch instantly.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">📂</div>
+            <h3 data-en="Auto Organize" data-zh="自动整理">Auto Organize</h3>
+            <p data-en="One-click automatic organization by app category. Developer Tools, Productivity, Games — all sorted." data-zh="一键按应用分类自动归类。开发工具、效率工具、游戏 — 自动归档。">One-click automatic organization by app category. Developer Tools, Productivity, Games — all sorted.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">🖱️</div>
+            <h3 data-en="Context Menu" data-zh="右键菜单">Context Menu</h3>
+            <p data-en="Right-click any app for Show in Finder, Get Info, Remove, or Move to Trash." data-zh="右键点击任意应用：在 Finder 中显示、显示简介、移除、移到废纸篓。">Right-click any app for Show in Finder, Get Info, Remove, or Move to Trash.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">⌨️</div>
+            <h3 data-en="Global Hotkey" data-zh="全局快捷键">Global Hotkey</h3>
+            <p data-en="Press Cmd+Shift+Space to open from anywhere. Click an app and QuickLaunch disappears immediately." data-zh="Cmd+Shift+Space 随时呼出。点击应用后 QuickLaunch 立即收起。">Press Cmd+Shift+Space to open from anywhere. Click an app and QuickLaunch disappears immediately.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">📁</div>
+            <h3 data-en="Drag & Drop Folders" data-zh="拖拽文件夹">Drag & Drop Folders</h3>
+            <p data-en="Drag one app onto another to create folders. Rename, dissolve, or reorganize anytime." data-zh="将一个应用拖到另一个上自动创建文件夹。随时重命名、解散、重新整理。">Drag one app onto another to create folders. Rename, dissolve, or reorganize anytime.</p>
+        </div>
+        <div class="feature">
+            <div class="icon">🔄</div>
+            <h3 data-en="Auto Sync" data-zh="自动同步">Auto Sync</h3>
+            <p data-en="Automatically detects newly installed and removed apps. Your launcher stays up to date." data-zh="自动检测新安装和卸载的应用。启动台始终保持最新。">Automatically detects newly installed and removed apps. Your launcher stays up to date.</p>
+        </div>
+    </div>
+
+    <div class="comparison-section">
+        <h2 data-en="vs. Native Launchpad" data-zh="对比原生 Launchpad">vs. Native Launchpad</h2>
+        <table class="comparison">
+            <thead>
+                <tr>
+                    <th data-en="Feature" data-zh="功能">Feature</th>
+                    <th>QuickLaunch</th>
+                    <th>Launchpad</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-en="Pinyin Search" data-zh="拼音搜索">Pinyin Search</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Auto Organize" data-zh="自动整理">Auto Organize</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Usage-based Sorting" data-zh="使用频率排序">Usage-based Sorting</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Context Menu" data-zh="右键菜单">Context Menu</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Status Bar" data-zh="状态栏入口">Status Bar</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Custom Hotkey" data-zh="自定义快捷键">Custom Hotkey</td>
+                    <td class="highlight">✓</td>
+                    <td>✗</td>
+                </tr>
+                <tr>
+                    <td data-en="Full-screen Blur" data-zh="全屏模糊背景">Full-screen Blur</td>
+                    <td class="highlight">✓</td>
+                    <td>✓</td>
+                </tr>
+                <tr>
+                    <td data-en="Drag & Drop Folders" data-zh="拖拽文件夹">Drag & Drop Folders</td>
+                    <td class="highlight">✓</td>
+                    <td>✓</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="install">
+        <h2 data-en="Installation" data-zh="安装">Installation</h2>
+        <div class="install-steps">
+            <p data-en="Download the signed DMG —" data-zh="下载已签名 DMG —">Download the signed DMG —</p>
+            <p style="margin-top: 12px;">
+                <a href="https://github.com/vorojar/QuickLaunch/releases/latest" class="cta-primary" style="display: inline-block;" data-en="Download Latest Release" data-zh="下载最新版本">Download Latest Release</a>
+            </p>
+            <p data-en="The DMG is signed, notarized, and stapled with Apple Developer ID." data-zh="DMG 已使用 Apple Developer ID 签名、公证并 staple。">The DMG is signed, notarized, and stapled with Apple Developer ID.</p>
+            <p data-en="A Homebrew cask recipe is included in the repository for tap or submission workflows." data-zh="仓库内包含 Homebrew cask 配方，可用于 tap 或提交分发流程。">A Homebrew cask recipe is included in the repository for tap or submission workflows.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <span data-en="Made by " data-zh="由 ">Made by </span>
+            <a href="https://github.com/vorojar">vorojar</a>
+            <span data-en=" · MIT License · " data-zh=" 开发 · MIT License · "> · MIT License · </span>
+            <a href="https://github.com/vorojar/QuickLaunch">GitHub</a>
+            <span> · macOS 14+</span>
+        </p>
+    </footer>
+
+    <script>
+    (function() {
+        var lang = (navigator.language || '').startsWith('zh') ? 'zh' : 'en';
+
+        function apply(l) {
+            lang = l;
+            document.querySelectorAll('[data-' + l + ']').forEach(function(el) {
+                el.innerHTML = el.getAttribute('data-' + l);
+            });
+            document.querySelectorAll('.lang-btn').forEach(function(b) {
+                b.classList.toggle('active', b.dataset.lang === l);
+            });
+            document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(function(b) {
+            b.addEventListener('click', function(e) {
+                e.preventDefault();
+                apply(this.dataset.lang);
+            });
+        });
+
+        apply(lang);
+    })();
+
+    fetch("https://api.github.com/repos/vorojar/QuickLaunch")
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.stargazers_count !== undefined) {
+                document.getElementById("star-btn").innerHTML = "★ Star " + d.stargazers_count;
+            }
+        })
+        .catch(function() {});
+    </script>
+</body>
+</html>
