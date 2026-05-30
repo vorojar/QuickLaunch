@@ -12,6 +12,7 @@ final class AppState: ObservableObject {
     @Published var isVisible: Bool = false
     @Published var isJiggling: Bool = false
     @Published var draggingItemID: UUID? = nil
+    @Published var draggingSourceFolderID: UUID? = nil
     @Published var wallpaperImage: NSImage?
 
     // Delete confirmation
@@ -475,34 +476,53 @@ final class AppState: ObservableObject {
 
     func endDrag() {
         draggingItemID = nil
+        draggingSourceFolderID = nil
         lastMoveTarget = nil
         save()
     }
 
     // MARK: - Folder Operations
 
+    func item(withID id: UUID) -> LaunchItem? {
+        for item in gridItems {
+            if item.id == id { return item }
+            if let child = item.children?.first(where: { $0.id == id }) {
+                return child
+            }
+        }
+        return nil
+    }
+
     func createFolder(from a: LaunchItem, and b: LaunchItem) {
-        guard let ai = gridItems.firstIndex(where: { $0.id == a.id }),
-              let bi = gridItems.firstIndex(where: { $0.id == b.id }) else { return }
-        let folder = LaunchItem(name: L10n.newFolder, kind: .folder, children: [a, b])
-        let mi = min(ai, bi)
+        guard a.id != b.id, a.kind != .folder, b.kind != .folder,
+              let ai = topLevelIndex(containing: a.id),
+              let bi = topLevelIndex(containing: b.id) else { return }
+
+        let insertIndex = min(ai, bi)
+        var newFolderID: UUID?
         withAnimation(.spring(duration: 0.25)) {
-            gridItems.removeAll { $0.id == a.id || $0.id == b.id }
-            gridItems.insert(folder, at: min(mi, gridItems.count))
+            let first = removeItemFromCurrentLocation(id: a.id) ?? a
+            let second = removeItemFromCurrentLocation(id: b.id) ?? b
+            let folder = LaunchItem(name: L10n.newFolder, kind: .folder, children: [first, second])
+            newFolderID = folder.id
+            gridItems.insert(folder, at: min(insertIndex, gridItems.count))
         }
         save()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.expandedFolderID = folder.id
+            self?.expandedFolderID = newFolderID
         }
     }
 
     func addToFolder(item: LaunchItem, folderID: UUID) {
+        guard item.id != folderID,
+              gridItems.contains(where: { $0.id == folderID && $0.kind == .folder }),
+              !folder(folderID, contains: item.id) else { return }
+
         withAnimation(.spring(duration: 0.25)) {
-            gridItems.removeAll { $0.id == item.id }
-            // Re-find folder index AFTER removal since indices may have shifted
+            let movedItem = removeItemFromCurrentLocation(id: item.id) ?? item
             guard let fi = gridItems.firstIndex(where: { $0.id == folderID }),
                   gridItems[fi].kind == .folder else { return }
-            gridItems[fi].children?.append(item)
+            gridItems[fi].children?.append(movedItem)
         }
         save()
     }
@@ -545,6 +565,54 @@ final class AppState: ObservableObject {
             }
         }
         save()
+    }
+
+    private func topLevelIndex(containing id: UUID) -> Int? {
+        for (index, item) in gridItems.enumerated() {
+            if item.id == id { return index }
+            if item.children?.contains(where: { $0.id == id }) == true {
+                return index
+            }
+        }
+        return nil
+    }
+
+    private func folder(_ folderID: UUID, contains itemID: UUID) -> Bool {
+        guard let folder = gridItems.first(where: { $0.id == folderID && $0.kind == .folder }) else {
+            return false
+        }
+        return folder.children?.contains(where: { $0.id == itemID }) == true
+    }
+
+    @discardableResult
+    private func removeItemFromCurrentLocation(id: UUID) -> LaunchItem? {
+        if let index = gridItems.firstIndex(where: { $0.id == id }) {
+            return gridItems.remove(at: index)
+        }
+
+        for index in gridItems.indices where gridItems[index].kind == .folder {
+            guard let childIndex = gridItems[index].children?.firstIndex(where: { $0.id == id }),
+                  let child = gridItems[index].children?.remove(at: childIndex) else {
+                continue
+            }
+
+            dissolveSparseFolder(at: index)
+            return child
+        }
+
+        return nil
+    }
+
+    private func dissolveSparseFolder(at index: Int) {
+        guard gridItems.indices.contains(index),
+              gridItems[index].kind == .folder,
+              let children = gridItems[index].children,
+              children.count <= 1 else { return }
+
+        gridItems.remove(at: index)
+        for (offset, child) in children.enumerated() {
+            gridItems.insert(child, at: min(index + offset, gridItems.count))
+        }
     }
 
     // MARK: - Auto Organize

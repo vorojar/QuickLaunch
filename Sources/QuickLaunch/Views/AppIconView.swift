@@ -6,6 +6,7 @@ struct AppIconView: View {
     var iconSize: CGFloat = 64
     var isDropTarget: Bool = false
     var showContextMenu: Bool = true  // Set to false when used inside folder (folder provides its own menu)
+    var onDragStart: (() -> NSItemProvider)? = nil
     var onLaunch: () -> Void
 
     @EnvironmentObject private var appState: AppState
@@ -71,7 +72,11 @@ struct AppIconView: View {
             appState.enterJiggleMode()
         }
         .onDrag {
+            if let onDragStart {
+                return onDragStart()
+            }
             appState.draggingItemID = item.id
+            appState.draggingSourceFolderID = nil
             if !appState.isJiggling { appState.enterJiggleMode() }
             return NSItemProvider(object: item.id.uuidString as NSString)
         }

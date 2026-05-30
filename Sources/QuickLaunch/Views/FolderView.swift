@@ -79,6 +79,7 @@ struct FolderThumbnailView: View {
         }
         .onDrag {
             appState.draggingItemID = folder.id
+            appState.draggingSourceFolderID = nil
             if !appState.isJiggling { appState.enterJiggleMode() }
             return NSItemProvider(object: folder.id.uuidString as NSString)
         }
@@ -158,14 +159,15 @@ struct FolderExpandedView: View {
                         iconImage: appState.iconCache.icon(for: child),
                         iconSize: 52,
                         showContextMenu: false,
+                        onDragStart: {
+                            appState.draggingItemID = child.id
+                            appState.draggingSourceFolderID = folder.id
+                            if !appState.isJiggling { appState.enterJiggleMode() }
+                            onClose()
+                            return NSItemProvider(object: child.id.uuidString as NSString)
+                        },
                         onLaunch: { onLaunchChild(child) }
                     )
-                    .onDrag {
-                        // Drag out of folder: remove child, close folder
-                        onRemoveChild(child)
-                        onClose()
-                        return NSItemProvider(object: child.id.uuidString as NSString)
-                    }
                     .contextMenu {
                         Button {
                             onRemoveChild(child)

@@ -184,6 +184,19 @@ struct LaunchpadRootView: View {
         .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
+        .dropDestination(for: String.self) { ids, _ in
+            guard let sourceFolderID = appState.draggingSourceFolderID,
+                  let s = ids.first,
+                  let did = UUID(uuidString: s),
+                  let draggedItem = appState.item(withID: did) else {
+                appState.endDrag()
+                return false
+            }
+
+            appState.removeFromFolder(item: draggedItem, folderID: sourceFolderID)
+            appState.endDrag()
+            return true
+        }
         .onTapGesture { handleBackgroundTap() }
     }
 
@@ -199,7 +212,7 @@ struct LaunchpadRootView: View {
                 guard let s = ids.first, let did = UUID(uuidString: s), did != item.id else {
                     appState.endDrag(); return false
                 }
-                if let d = appState.gridItems.first(where: { $0.id == did }), d.kind != .folder {
+                if let d = appState.item(withID: did), d.kind != .folder {
                     appState.addToFolder(item: d, folderID: item.id)
                 }
                 appState.endDrag()
@@ -224,7 +237,7 @@ struct LaunchpadRootView: View {
                 guard let s = ids.first, let did = UUID(uuidString: s), did != item.id else {
                     appState.endDrag(); return false
                 }
-                if let d = appState.gridItems.first(where: { $0.id == did }) {
+                if let d = appState.item(withID: did) {
                     appState.createFolder(from: d, and: item)
                 }
                 appState.endDrag()

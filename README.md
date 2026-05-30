@@ -17,11 +17,13 @@ macOS Launchpad lacks pinyin search, category-based organization, context menus,
 
 ## Latest Release
 
-**v1.0.5** focuses on launch responsiveness and release quality:
+**v1.0.6** focuses on folder drag-and-drop polish:
 
-- QuickLaunch now hides immediately when you click an app, before the target app starts opening.
+- Apps can now be dragged out of folders back to the main grid.
+- Folder apps can be dragged directly into another folder or onto a loose app to create a new folder.
+- Canceling a drag no longer removes the app from its original folder.
 - The distributed DMG is Developer ID signed, notarized, and stapled.
-- SHA256: `028949fbfb2ff2a1ca1ac67b8ab73a5441515f410f3265ee4c9389bd9fe92324`
+- SHA256: `31d7d75c5663b04d51a991aaa5270a332d5adcff766e920f7b0f3253b0e02411`
 
 ### vs. Native Launchpad
 
@@ -43,8 +45,8 @@ macOS Launchpad lacks pinyin search, category-based organization, context menus,
 
 - **Full-screen Launchpad** - Blurred wallpaper background, just like native macOS
 - **App Grid** - Display all installed applications with smooth animations
-- **Drag & Drop** - Reorder apps by dragging, create folders by dropping one app onto another
-- **Folders** - Organize apps into folders, rename them, dissolve when needed
+- **Drag & Drop** - Reorder apps, create folders, and move apps in or out of folders
+- **Folders** - Organize apps into folders, rename them, dissolve them, or drag apps back out
 - **Search** - Real-time filtering with Chinese pinyin support
 - **Instant Launch Feedback** - QuickLaunch hides immediately after you click an app
 - **Auto Organize** - One-click automatic organization by app category
