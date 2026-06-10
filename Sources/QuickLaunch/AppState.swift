@@ -45,6 +45,7 @@ final class AppState: ObservableObject {
         startPeriodicRescan()
         preloadAllIcons()
         setupVisibilityRescan()
+        mergeApps()
     }
 
     func loadData() {
@@ -150,6 +151,13 @@ final class AppState: ObservableObject {
             NSHomeDirectory() + "/Applications"
         ]
         directoryMonitor = DirectoryMonitor(paths: paths) { [weak self] in
+            self?.mergeAppsAfterDirectoryChange()
+        }
+    }
+
+    private func mergeAppsAfterDirectoryChange() {
+        mergeApps()
+        DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 5) { [weak self] in
             self?.mergeApps()
         }
     }

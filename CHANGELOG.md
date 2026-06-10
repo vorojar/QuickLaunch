@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-06-10
+
+### Fixed
+- Detect newly installed apps immediately after launch and more reliably while QuickLaunch is already running.
+
 ## [1.0.5] - 2026-05-24
 
 ### Fixed
